@@ -2,7 +2,7 @@ import java.util.Stack;
 import processing.core.*;
 import Jama.Matrix;
 
-public class Tests extends PApplet {
+public class PointsToHomographie_Applet extends PApplet {
 
 //	public static void main(String args[]) {
 //		
