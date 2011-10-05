@@ -1,5 +1,5 @@
 import java.util.Stack;
-
+import processing.core.*;
 import Jama.Matrix;
 
 
@@ -41,6 +41,30 @@ public class Homographie {
 							  {h_vert.get(3, 0), h_vert.get(4, 0), h_vert.get(5, 0)},
 							  {h_vert.get(6, 0), h_vert.get(7, 0), 1               }};
 		return new Matrix(H_array);
+	}
+	
+
+	static PImage invert(Matrix H, PImage img) {
+		PImage res = new PImage(img.width, img.height);
+		for (int x = 0; x < img.width; x++) {
+			for (int y = 0; x < img.height; y++) {
+				// Point inverse theorique (x0,y0) ?
+				double[][] q_array = {{x},{y},{1}};
+				Matrix P = H.times(new Matrix(q_array));
+				double x0 = P.get(0, 0)/P.get(2, 0);
+				double y0 = P.get(1, 0)/P.get(2, 0);
+				// S'il est hors de l'image originale, on rend le pixel transparant. 
+				if (x0 < 0 || x0 >= img.width || y0 < 0 || y0 >= img.height)
+					res.set(x, y, 0x00000000);
+				else
+					res.set(x, y, img.get((int) x0, (int) y0));
+			}
+		}
+		return res;
+	}
+
+	static PImage apply(Matrix H, PImage img) {
+		return invert(H.inverse(), img);
 	}
 
 }
