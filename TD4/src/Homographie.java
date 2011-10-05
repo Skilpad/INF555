@@ -36,10 +36,6 @@ public class Homographie {
 			B = At.times(A).inverse().times(At);
 		}
 		// On calcule l'homographie
-//		System.out.println("A:");A.print(6,2);System.out.println(""); 
-//		System.out.println("Q:");Q.print(6,2);System.out.println(""); 
-//		System.out.println("B:");B.print(6,2);System.out.println("");
-		
 		Matrix h_vert = B.times(Q);
 		double[][] H_array = {{h_vert.get(0, 0), h_vert.get(1, 0), h_vert.get(2, 0)},
 							  {h_vert.get(3, 0), h_vert.get(4, 0), h_vert.get(5, 0)},
