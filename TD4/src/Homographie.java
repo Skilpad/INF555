@@ -47,7 +47,7 @@ public class Homographie {
 	static PImage invert(Matrix H, PImage img) {
 		PImage res = new PImage(img.width, img.height);
 		for (int x = 0; x < img.width; x++) {
-			for (int y = 0; x < img.height; y++) {
+			for (int y = 0; y < img.height; y++) {
 				// Point inverse theorique (x0,y0) ?
 				double[][] q_array = {{x},{y},{1}};
 				Matrix P = H.times(new Matrix(q_array));

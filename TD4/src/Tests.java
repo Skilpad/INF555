@@ -52,6 +52,7 @@ public class Tests extends PApplet {
 	public void draw() {}
 	
 	public void mouseClicked() {
+		if (clicked < 0) return;
 		if (mouseX < from_img.width) {
 			if (clicked == 1) return;
 			if (clicked == 0) {
@@ -77,7 +78,7 @@ public class Tests extends PApplet {
 	}
 	
 	private void plotPoints() {
-		fill(color(255,0,0)); stroke(color(255,0,0));
+		fill(color(0xFFFF0000)); stroke(color(0xFFFF0000));
 		for (Pt p : from)   ellipse((int) p.x, (int) p.y, 4, 4);
 		for (Pt p : to  )   ellipse((int) p.x + from_img.width + 5, (int) p.y, 4, 4);
 	}
@@ -86,20 +87,17 @@ public class Tests extends PApplet {
 		if ( !( key == ' ' && clicked == 0 && from.size() > 3 ) ) return;
 		Matrix h = Homographie.find(from, to);
 		System.out.println("The Homography Matrix is: "); h.print(10,2);
-		PImage to_distorted   = Homographie.invert(h, to_img); set_transparent(to_distorted);
-		PImage from_distorted = Homographie.invert(h, to_img); set_transparent(from_distorted);
+		PImage to_distorted   = Homographie.invert(h, to_img); 
+		PImage from_distorted = Homographie.apply(h, from_img); 
 		image(from_img, 0, 0);
-		image(to_distorted, 0, 0);
 		image(to_img, from_img.width + 5, 0);
+		tint(255, 255, 255, 126); 
+		image(to_distorted, 0, 0);
 		image(from_distorted, from_img.width + 5, 0);
-	}
-	
-	private void set_transparent(PImage img) {
-		for (int x = 0; x < img.width; x++) {
-			for (int y = 0; y < img.height; y++) {
-				img.set(x, y, color(get(x,y), 120));
-			}
-		}
+		fill(color(0xFFFFFFFF)); stroke(color(0xFFFFFFFF)); textSize(32);
+		text("Backward Mapping", 20, 50); 
+		text("Forward Mapping", from_img.width + 25, 50); 
+		clicked = -1;
 	}
 	
 }
