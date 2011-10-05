@@ -24,28 +24,91 @@ public class Tests extends PApplet {
 //	}
 //	
 	
-	PImage a;
+	PImage from_img;
+	PImage to_img;
+	PImage from_img_gray;
+	PImage to_img_gray;
+	
 	Stack<Pt> from;
 	Stack<Pt> to;
 	
+	int clicked;
 	
 	public void setup() {
 		from = new Stack<Pt>();
 		to   = new Stack<Pt>();
-		a = loadImage("otter.png");
-		size(a.width,a.height);
-		image(a, 0, 0);
+		from_img = loadImage("bookcovers1.png");
+		to_img   = loadImage("bookcovers2.png");
+		from_img_gray = loadImage("bookcovers1.png");
+		to_img_gray   = loadImage("bookcovers2.png");
+		from_img_gray.filter(GRAY);
+		to_img_gray.filter(GRAY);
+		size(from_img.width + 5 + to_img.width, Math.max(from_img.height,to_img.height));
+		background(0);
+		image(from_img, 0, 0);
+		image(to_img, from_img.width + 5, 0);
 	}
 	
-	public void draw() {
-	}
+	public void draw() {}
 	
 	public void mouseClicked() {
-		System.out.println(mouseX + "," + mouseY);
-		from.push(new Pt(mouseX, mouseY));
-		fill(color(255,0,0)); stroke(color(255,0,0));
-		ellipse(mouseX, mouseY, 4, 4);
+		if (mouseX < from_img.width) {
+			if (clicked == 1) return;
+			if (clicked == 0) {
+				clicked = 1;
+				image(from_img_gray, 0, 0);
+			} else {
+				clicked = 0;
+				image(to_img, from_img.width + 5, 0);
+			}
+			from.push(new Pt(mouseX, mouseY));
+		} else if (mouseX > from_img.width + 5) {
+			if (clicked == 2) return;
+			if (clicked == 0) {
+				clicked = 2;
+				image(to_img_gray, from_img.width + 5, 0);
+			} else {
+				clicked = 0;
+				image(from_img, 0, 0);
+			}
+			to.push(new Pt(mouseX - from_img.width - 5, mouseY));
+		}
+		plotPoints();
 	}
 	
+	private void plotPoints() {
+		fill(color(255,0,0)); stroke(color(255,0,0));
+		for (Pt p : from)   ellipse((int) p.x, (int) p.y, 4, 4);
+		for (Pt p : to  )   ellipse((int) p.x + from_img.width + 5, (int) p.y, 4, 4);
+	}
+	
+	public void keyPressed() {
+		if ( !( key == ' ' && clicked == 0 && from.size() > 3 ) ) return;
+		Matrix h = Homographie.find(from, to);
+		System.out.println("The Homography Matrix is: "); h.print(10,2);
+		PImage to_distorted   = Homographie.invert(h, to_img); set_transparent(to_distorted);
+		PImage from_distorted = Homographie.invert(h, to_img); set_transparent(from_distorted);
+		image(from_img, 0, 0);
+		image(to_distorted, 0, 0);
+		image(to_img, from_img.width + 5, 0);
+		image(from_distorted, from_img.width + 5, 0);
+	}
+	
+	private void set_transparent(PImage img) {
+		for (int x = 0; x < img.width; x++) {
+			for (int y = 0; y < img.height; y++) {
+				img.set(x, y, color(get(x,y), 120));
+			}
+		}
+	}
 	
 }
+
+
+
+
+
+
+
+
+
