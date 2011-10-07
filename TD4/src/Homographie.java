@@ -6,7 +6,7 @@ import Jama.Matrix;
 
 public class Homographie {
 	
-	static Matrix find(Stack<Pt> from, Stack<Pt> to) {
+	public static Matrix find(Stack<Pt> from, Stack<Pt> to) {
 		int n = from.size();
 		if (n < 4)          {throw new Error("Homographie.find: Not enought point");}
 		if (n != to.size()) {throw new Error("Homographie.find: The 2 args don't have the same number of point");}
@@ -44,7 +44,7 @@ public class Homographie {
 	}
 	
 
-	static PImage invert(Matrix H, PImage img) {
+	public static PImage invert(Matrix H, PImage img) {
 		PImage res = new PImage(img.width, img.height);
 		for (int x = 0; x < img.width; x++) {
 			for (int y = 0; y < img.height; y++) {
@@ -63,8 +63,16 @@ public class Homographie {
 		return res;
 	}
 
-	static PImage apply(Matrix H, PImage img) {
+	public static PImage apply(Matrix H, PImage img) {
 		return invert(H.inverse(), img);
 	}
-
+	
+	private int color(double x, double y) {
+		int ix = (int) x;
+		int iy = (int) y;
+		
+		
+		return 0;
+	}
+	
 }
