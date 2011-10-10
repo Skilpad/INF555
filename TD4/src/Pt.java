@@ -1,16 +1,16 @@
 
 public class Pt {
 	
-	public double x, y;
+	public float x, y;
 	
-	public Pt(double x, double y) {
+	public Pt(float x, float y) {
 		this.x = x;
 		this.y = y;
 	}
 	
 	public Pt() {
-		this.x = Math.random();
-		this.y = Math.random();
+		this.x = (float) Math.random();
+		this.y = (float) Math.random();
 	}
 	
 	public Pt(Vect v) {

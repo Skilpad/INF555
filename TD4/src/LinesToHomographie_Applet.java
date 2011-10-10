@@ -1,3 +1,28 @@
+//============================================================================
+//
+//                           MODE D'EMPLOI
+//
+//============================================================================
+//
+//    Cliquer une première fois pour démarrer la description d'une droite,
+//    une seconde fois pour terminer sa description.
+//    
+//    Pour annuler une description en court, faire un clic droit.
+//
+//    Après avoir décrit une droite dans la première image,
+//    décrire la droite correspondante dans la seconde.
+//
+//    Une fois qu'au moins 4 droites ont ainsi été décrites dans chaque image
+//    (il faut donc être sur la première image), tapper espace pour calculer
+//    l'homographie correspondante.
+//
+//    Un apperçu de son application est alors affiché.
+//    
+//    Retapper espace pour avoir un apperçu de l'application de son inverse.
+//
+//============================================================================
+
+
 
 import java.util.Stack;
 import processing.core.*;
@@ -13,91 +38,84 @@ public class LinesToHomographie_Applet extends PApplet {
 	PImage from_distorted;
 	PImage to_distorted;
 	
-	boolean wide_screen;
-	
-	Stack<Pt> from;
-	Stack<Pt> to;
+	Stack<Vect> from;
+	Stack<Vect> to;
 	
 	int clicked;
 	
+	Pt firstPt;
+	
+	
 	public void setup() {
-		wide_screen = false; 
-		from = new Stack<Pt>();
-		to   = new Stack<Pt>();
+		clicked = 0;
+		from = new Stack<Vect>();
+		to   = new Stack<Vect>();
 		from_img = loadImage("bookcovers1.png");
 		to_img   = loadImage("bookcovers2.png");
 		from_img_gray = loadImage("bookcovers1.png");
 		to_img_gray   = loadImage("bookcovers2.png");
 		from_img_gray.filter(GRAY);
 		to_img_gray.filter(GRAY);
-		if (wide_screen) {
-			size(from_img.width + 5 + to_img.width, Math.max(from_img.height,to_img.height));
-			background(0);
-			image(from_img, 0, 0);
-			image(to_img, from_img.width + 5, 0);
-		} else {
-			size(Math.max(from_img.width, to_img.width), Math.max(from_img.height,to_img.height));
-			background(0);
-			image(from_img, 0, 0);
-		}
+		firstPt = new Pt(-1, -1);
+		size(Math.max(from_img.width, to_img.width), Math.max(from_img.height,to_img.height));
+		drawCurrent();
 	}
 			
 	
-	public void draw() {}
+	public void draw() {
+		if (firstPt.x < 0) return;
+		drawCurrent();
+		fill(color(0xFFFF0000)); stroke(color(0xFFFF0000));
+		line(firstPt.x, firstPt.y, mouseX, mouseY);
+	}
+	
+	private void drawCurrent() {
+		background(0);
+		image(((clicked==0) ? from_img : to_img), 0, 0);
+		plotLines();		
+	}
 	
 	public void mouseClicked() {
-		if (clicked < 0) return;
-		if (wide_screen) {
-			if (mouseX < from_img.width) {
-				if (clicked == 1) return;
-				if (clicked == 0) {
-					clicked = 1;
-					image(from_img_gray, 0, 0);
-				} else {
-					clicked = 0;
-					image(to_img, from_img.width + 5, 0);
-				}
-				from.push(new Pt(mouseX, mouseY));
-			} else if (mouseX > from_img.width + 5) {
-				if (clicked == 2) return;
-				if (clicked == 0) {
-					clicked = 2;
-					image(to_img_gray, from_img.width + 5, 0);
-				} else {
-					clicked = 0;
-					image(from_img, 0, 0);
-				}
-				to.push(new Pt(mouseX - from_img.width - 5, mouseY));
-			}
-			plotPoints();
+		if (clicked < 0) 		  return;
+		if (mouseButton == RIGHT) { 
+			firstPt = new Pt(-1,-1);
+			drawCurrent();
+			return;
+		}
+		if (firstPt.x < 0) {
+			firstPt = new Pt(mouseX, mouseY);
 		} else {
 			if (clicked == 0) {
-				background(0);
-				image(to_img, 0, 0);
 				clicked = 1;
-				from.push(new Pt(mouseX, mouseY));
+				from.push(new Vect(firstPt, new Pt(mouseX, mouseY)));
+				firstPt = new Pt(-1,-1);
 			} else {
-				background(0);
-				image(from_img, 0, 0);
 				clicked = 0;
-				to.push(new Pt(mouseX, mouseY));
+				to.push(new Vect(firstPt, new Pt(mouseX, mouseY)));
+				firstPt = new Pt(-1,-1);
 			}
-			plotPoints();
+			drawCurrent();
 		}
 	}
 	
-	private void plotPoints() {
+	private void plotLines() {
+		for (Vect v : ((clicked==0) ? from : to) ) plotLine(v);
+	}
+	
+	public void plotLine(Vect v) {
 		fill(color(0xFFFF0000)); stroke(color(0xFFFF0000));
-		if (wide_screen) {
-			for (Pt p : from)   ellipse((int) p.x, (int) p.y, 4, 4);
-			for (Pt p : to  )   ellipse((int) p.x + from_img.width + 5, (int) p.y, 4, 4);
+		if (v.a == 0) { 
+			float w = ((clicked==0) ? from_img : to_img).width;
+			line(0, -v.c/v.b, w, -(v.a*w+v.c)/v.b);
 		} else {
-			for (Pt p : ((clicked==0) ? from : to) )   ellipse((int) p.x, (int) p.y, 4, 4);
+			float h = ((clicked==0) ? from_img : to_img).height;
+			line(-v.c/v.a, 0, -(v.b*h+v.c)/v.a, h);
 		}
 	}
+	
 	
 	public void keyPressed() {
-		if (!wide_screen && clicked == -1) {
+		if (clicked == -1) {
 			tint(255, 255, 255, 255); 
 			background(0);
 			image(to_img, 0, 0);
@@ -111,24 +129,12 @@ public class LinesToHomographie_Applet extends PApplet {
 		System.out.println("The Homography Matrix is: "); h.print(10,2);
 		to_distorted   = Homographie.invert(h, to_img); 
 		from_distorted = Homographie.apply(h, from_img); 
-		if (wide_screen) {
-			image(from_img, 0, 0);
-			image(to_img, from_img.width + 5, 0);
-			tint(255, 255, 255, 126); 
-			image(to_distorted, 0, 0);
-			image(from_distorted, from_img.width + 5, 0);
-			fill(color(0xFFFFFFFF)); stroke(color(0xFFFFFFFF)); textSize(32);
-			text("Backward Mapping", 20, 50); 
-			text("Forward Mapping", from_img.width + 25, 50); 
-			clicked = -1;
-		} else {
-			image(from_img, 0, 0);
-			tint(255, 255, 255, 126); 
-			image(to_distorted, 0, 0);
-			fill(color(0xFFFFFFFF)); stroke(color(0xFFFFFFFF)); textSize(32);
-			text("Backward Mapping", 20, 50);
-			clicked = -1;
-		}
+		image(from_img, 0, 0);
+		tint(255, 255, 255, 126); 
+		image(to_distorted, 0, 0);
+		fill(color(0xFFFFFFFF)); stroke(color(0xFFFFFFFF)); textSize(32);
+		text("Backward Mapping", 20, 50);
+		clicked = -1;
 	}
 	
 }

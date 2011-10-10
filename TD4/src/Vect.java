@@ -1,9 +1,9 @@
 
 public class Vect {
 
-	public double a, b, c;
+	public float a, b, c;
 	
-	public Vect(double a, double b, double c) {
+	public Vect(float a, float b, float c) {
 		this.a = a;
 		this.b = b;
 		this.c = c;

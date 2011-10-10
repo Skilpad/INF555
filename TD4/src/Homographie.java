@@ -45,7 +45,8 @@ public class Homographie {
 		double[][] H_array = {{h_vert.get(0, 0), h_vert.get(1, 0), h_vert.get(2, 0)},
 							  {h_vert.get(3, 0), h_vert.get(4, 0), h_vert.get(5, 0)},
 							  {h_vert.get(6, 0), h_vert.get(7, 0), 1               }};
-		return new Matrix(H_array);
+		Matrix H = new Matrix(H_array);
+		return (typeIsPt) ? H : H.inverse().transpose();
 	}
 	
 	/*

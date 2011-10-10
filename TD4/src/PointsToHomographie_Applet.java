@@ -1,3 +1,27 @@
+//============================================================================
+//
+//                           MODE D'EMPLOI
+//
+//============================================================================
+//
+//    Cliquer sur l'image pour indiquer un point caractéristique.
+//    Cliquer alors sur la seconde image pour indiquer le point correspondant.
+//
+//    Une fois qu'au moins 4 points ont ainsi été décrits dans chaque image
+//    (il faut donc être sur la première image), tapper espace pour calculer
+//    l'homographie correspondante.
+//
+//    Un apperçu de son application est alors affiché.
+//    
+//    Retapper espace pour avoir un apperçu de l'application de son inverse.
+//    
+//    NB: En remplaçant dans la fonction setup() "wide_screen = false;" par
+//        "wide_screen = true;", l'interface est adaptée à un écran large,
+//        capable d'afficher les deux images l'une à côté de l'autre.
+//
+//============================================================================
+
+
 
 import java.util.Stack;
 import processing.core.*;
@@ -21,7 +45,9 @@ public class PointsToHomographie_Applet extends PApplet {
 	int clicked;
 	
 	public void setup() {
-		wide_screen = false; 
+		wide_screen = false;
+//		wide_screen = true;
+		clicked = 0;
 		from = new Stack<Pt>();
 		to   = new Stack<Pt>();
 		from_img = loadImage("bookcovers1.png");
