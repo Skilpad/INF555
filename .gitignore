@@ -1,3 +1,6 @@
 .metadata
 *.zip
+*.rar
 notes.txt
+*/bin/*
+*.html
