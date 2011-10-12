@@ -8,11 +8,30 @@ public class ColorPt {
 		this.r = r/255;
 		this.g = g/255;
 		this.b = b/255;
-		rep = -1;
+		this.rep = -1;
+	}
+	
+	ColorPt () {
+		this.r = 0;
+		this.g = 0;
+		this.b = 0;
+		this.rep = 0;
 	}
 
-	double dist2(ColorPt p) {
+	public double dist2(ColorPt p) {
 		return (r-p.r)*(r-p.r) + (g-p.g)*(g-p.g) + (b-p.b)*(b-p.b);
 	}
 	
+	public void add(ColorPt p) {
+		r += p.r;
+		g += p.g;
+		b += p.b;
+		rep++;
+	}
+	
+	public void mid() {
+		r /= rep;
+		g /= rep;
+		b /= rep;
+	}
 }

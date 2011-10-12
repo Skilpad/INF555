@@ -7,8 +7,10 @@ public class Kmeans {
 
 	ColorPt[] rep;
 	int[]     repSize;
+	double[]  repDist2;
 	
 	double loss;
+	int it;
 	
 	Kmeans(PImage img) {
 		int n = img.width*img.height;
@@ -17,25 +19,29 @@ public class Kmeans {
 		for (int i=0;i<n;i++) {
 			pts[i] = new ColorPt(img.parent.red(img.pixels[i]), img.parent.green(img.pixels[i]), img.parent.blue(img.pixels[i]));
 		}
-		rep     = new ColorPt[0];
-		repSize = new int[0];
+		rep      = new ColorPt[0];
+		repSize  = new int[0];
+		repDist2 = new double[0];
+		it = 0;
 	}
 	
 	public void init(int nbRep) {
-		rep     = new ColorPt[nbRep];
-		repSize = new int[nbRep];
+		rep      = new ColorPt[nbRep];
+		repSize  = new int[nbRep];
+		repDist2 = new double[nbRep];
 		int i = 0;
-		while (i > nbRep) {
+		while (i < nbRep) {
 			int k = (int)(Math.random()*pts.length);
 			for (int j = 0; j < i; j++) { if (repSize[j] == k) continue; }
 			rep[i]     = pts[k];
 			repSize[i] = k;
+			i++;
 		}
 		localizePts();
 	}
 	
 	private void localizePts() {
-		for (int j = 0; j < repSize.length; j++) repSize[j] = 0;
+		for (int j = 0; j < repSize.length; j++) { repSize[j] = 0; repDist2[j] = 0; }
 		loss = 0;
 		for (ColorPt p : pts) {
 			double dloss = 4;  //  > dist² minimale entre 2 points
@@ -44,12 +50,17 @@ public class Kmeans {
 				if (dl < dloss) { p.rep = r; dloss = dl; }
 			}
 			loss += dloss;
-			repSize[p.rep] += 1;
+			repSize[p.rep]++;
+			repDist2[p.rep] = Math.max(repDist2[p.rep], dloss);
 		}
 	}
 	
 	public void iterate() {
-		// TODO
+		for (int r = 0; r < rep.length; r++) { rep[r] = new ColorPt(); }
+		for (ColorPt p : pts) { rep[p.rep].add(p); }
+		for (ColorPt r : rep) { r.mid(); }
+		localizePts();
+		it++;
 	}
 	
 }
