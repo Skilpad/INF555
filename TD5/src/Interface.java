@@ -11,8 +11,9 @@ public class Interface extends PApplet {
 	GL gl;
 
 	// pixel colors 
-	int n;
 	Kmeans pts;
+	
+	int nbRep = 5;
 
 	float xmag, ymag = 0;
 	float newXmag, newYmag = 0; 
@@ -21,8 +22,7 @@ public class Interface extends PApplet {
 		size(512, 512, OPENGL);  
 		img = loadImage("polytechnique.png");
 		loadPixels(); 
-		n=img.width*img.height;
-		pts = new Kmeans(img, n);
+		pts = new Kmeans(img);
 		colorMode(RGB, 1, 1, 1);
 		pgl = (PGraphicsOpenGL) g;
 		gl = pgl.beginGL(); 
@@ -54,8 +54,8 @@ public class Interface extends PApplet {
 		diff = ymag-newYmag;
 		if (abs(diff) >  0.01) { ymag -= diff/4.0; }
 		  
-		gl.glRotatef(-ymag,1,0,0);
-		gl.glRotatef( xmag,0,1,0);
+		gl.glRotatef(+ymag,1,0,0);
+		gl.glRotatef(-xmag,0,1,0);
 		gl.glTranslatef((float) -0.5, (float) -0.5, (float) -0.5); 
 
 		plot(pts);
@@ -63,7 +63,7 @@ public class Interface extends PApplet {
 		plotEdges();
 	}
 	
-	private void plot(Kmeans pts) {
+	private void plot(Kmeans pts) {       // TODO : Ploté les représentants si nbRep > 0 (Tailles proportionnelles à rep)
 		gl.glBegin(GL.GL_POINTS);
 		for (ColorPt p : pts.pts) {
 			gl.glColor3f(p.r,p.g,p.b);
