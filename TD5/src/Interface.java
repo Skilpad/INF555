@@ -12,26 +12,17 @@ public class Interface extends PApplet {
 
 	// pixel colors 
 	int n;
-	ColorPt[] pxs;
+	Kmeans pts;
 
 	float xmag, ymag = 0;
 	float newXmag, newYmag = 0; 
-
-	public void createPointSet()
-	{
-		pxs = new ColorPt[n];
-		println("Creating the 3D color point set for "+n+" pixels.");
-		for(int i=0;i<n;i++) {
-			pxs[i] = new ColorPt(red(img.pixels[i]), green(img.pixels[i]), blue(img.pixels[i]));
-		}
-	}
 
 	public void setup() {
 		size(512, 512, OPENGL);  
 		img = loadImage("polytechnique.png");
 		loadPixels(); 
 		n=img.width*img.height;
-		createPointSet();
+		pts = new Kmeans(img, n);
 		colorMode(RGB, 1, 1, 1);
 		pgl = (PGraphicsOpenGL) g;
 		gl = pgl.beginGL(); 
@@ -67,14 +58,14 @@ public class Interface extends PApplet {
 		gl.glRotatef( xmag,0,1,0);
 		gl.glTranslatef((float) -0.5, (float) -0.5, (float) -0.5); 
 
-		plot(pxs);
+		plot(pts);
 		
 		plotEdges();
 	}
 	
-	private void plot(ColorPt[] pts) {
+	private void plot(Kmeans pts) {
 		gl.glBegin(GL.GL_POINTS);
-		for (ColorPt p : pts) {
+		for (ColorPt p : pts.pts) {
 			gl.glColor3f(p.r,p.g,p.b);
 			gl.glVertex3f(p.r,p.g,p.b);
 		}
