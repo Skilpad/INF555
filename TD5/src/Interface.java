@@ -24,6 +24,10 @@ public class Interface extends PApplet {
 	public void setup() {
 		size(512, 512, OPENGL);  
 		img = loadImage("polytechnique.png");
+//		img = loadImage("tux.png");
+//		img = loadImage("firefox.png");
+//		img = loadImage("pencils.png");
+//		img = loadImage("blogcat.png");
 		loadPixels(); 
 		colorMode(RGB, 1, 1, 1);
 		pgl = (PGraphicsOpenGL) g;
