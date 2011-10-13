@@ -22,40 +22,48 @@ public class Interface extends PApplet {
 	float xmag, ymag = 0;
 	float newXmag, newYmag = 0;
 	
-	boolean distMode = true;
 	boolean kmeans = false;
 	
-	boolean resMode = false;
+	int view = 0;
 	
 	public void setup() {
 		size(512, 512, OPENGL);
 		colorMode(RGB, 1, 1, 1);
 		pgl = (PGraphicsOpenGL) g;
 		gl = pgl.beginGL();
+		fill(color(0xFFFFFFFF)); textSize(20);
 	}
 	
 	public void draw() {
 		if (indexImg == -2) { setImg(0); return; }
 		if (indexImg >= 0)  { return; }
 		if (pts == null)    { return; }
-		if (resMode)        { background(0); showImage(res); return; }
 		background(0);
-		fill(color(0xFFFFFFFF)); stroke(color(0xFFFFFFFF)); textSize(20);
-		textAlign(RIGHT);
-		text("Initialization: " + ((kmeans) ? "k-means++" : "Random"), 482, 30);
-		text("N: " + nbRep, 482, 50);
-		textAlign(LEFT);
-		text("Iteration: " + ((pts.rep.length == 0) ? "-" : pts.it), 20, 50);
-		text("Loss: " +      ((pts.rep.length == 0) ? "-" : pts.loss), 20, 80);
-		text("Radius <=> ", 20, 450);
-		text(((distMode) ? "Maximal distance to \ncorresponding points" : "Number of \ncorresponding points"), 150, 450);
-		gl.glMatrixMode(GL.GL_PROJECTION);
-		gl.glLoadIdentity();
-		gl.glOrtho(-2,2,-2,2,-100,100);  
-		gl.glMatrixMode(GL.GL_PROJECTION);
-		gl.glLoadIdentity();
-		gl.glOrtho(-2,2,-2,2,-100,100);  
-		renderPointSet(); 
+		if (view == 2) {
+			showImage(res);
+			textAlign(RIGHT);
+			text("Initialization: " + ((kmeans) ? "k-means++" : "Random"), 482, 30);
+			text("N: " + nbRep, 482, 50);
+			textAlign(LEFT);
+			text("Iteration: " + ((pts.rep.length == 0) ? "-" : pts.it), 20, 50);
+			text("Loss: " +      ((pts.rep.length == 0) ? "-" : pts.loss), 20, 80);
+		} else {
+			textAlign(RIGHT);
+			text("Initialization: " + ((kmeans) ? "k-means++" : "Random"), 482, 30);
+			text("N: " + nbRep, 482, 50);
+			textAlign(LEFT);
+			text("Iteration: " + ((pts.rep.length == 0) ? "-" : pts.it), 20, 50);
+			text("Loss: " +      ((pts.rep.length == 0) ? "-" : pts.loss), 20, 80);
+			text("Radius <=> ", 20, 450);
+			text(((view == 0) ? "Maximal distance to \ncorresponding points" : "Number of \ncorresponding points"), 150, 450);
+			gl.glMatrixMode(GL.GL_PROJECTION);
+			gl.glLoadIdentity();
+			gl.glOrtho(-2,2,-2,2,-100,100);  
+			gl.glMatrixMode(GL.GL_PROJECTION);
+			gl.glLoadIdentity();
+			gl.glOrtho(-2,2,-2,2,-100,100);  
+			renderPointSet(); 
+		}
 	}
 
 	public void renderPointSet() { 
@@ -88,10 +96,10 @@ public class Interface extends PApplet {
 				case ENTER: setImg(-1);                       break;
 			}
 		} else {
-			if (pts == null) { initPts(); return; }
-			if (resMode)     { resMode = false; return; }
+			if (pts == null) { initPts(); res = img; return; }
 			switch (key) {
 				case ' ' :  if (pts.rep.length == 0) pts.init(nbRep, kmeans); else pts.iterate(); 
+							if (pts.rep.length == 0) res = img; else res = pts.apply(img); 
 							break;
 				case '\n':  if (pts.rep.length == 0) pts.init(nbRep, kmeans);
 							double l0 = 0;
@@ -99,14 +107,14 @@ public class Interface extends PApplet {
 								l0 = pts.loss;
 								pts.iterate();
 							}
+							if (pts.rep.length == 0) res = img; else res = pts.apply(img); 
 							break;
-				case 'r' :  initPts(); break;
-				case 'v' :  distMode = !distMode; break;
+				case 'r' :  initPts(); res = img; break;
+				case 'v' :  view = (view+1)%3; break;
 				case 'i' :  kmeans   = !kmeans;   break;
 				case '+' :  nbRep++; break;
 				case '-' :  nbRep--; break;
-				case 'a' :  if (pts.rep.length == 0) res = img; else res = pts.apply(img); resMode = true; break;
-				case '0' :  pts = null; indexImg = -2; resMode = false; break;
+				case '0' :  pts = null; indexImg = -2; break;
 			}
 		}
 	}
@@ -122,7 +130,7 @@ public class Interface extends PApplet {
 			gl.glEnd();
 		} else {
 			for (int i = 0; i < pts.rep.length; i++) {
-				gl.glPointSize((distMode) ? 100 * (float) Math.sqrt(pts.repDist2[i]) : pts.repSize[i]*100/pts.pts.length);
+				gl.glPointSize((view == 0) ? 100 * (float) Math.sqrt(pts.repDist2[i]) : pts.repSize[i]*100/pts.pts.length);
 				gl.glBegin(GL.GL_POINTS);
 				ColorPt p = pts.rep[i];
 				gl.glColor3f(p.r,p.g,p.b);
@@ -192,11 +200,11 @@ public class Interface extends PApplet {
 		if (indexImg >= 0) {
 			img = loadImage(images[indexImg]);
 			showImage(img);
-			fill(color(0xFFFFFFFF)); stroke(color(0xFFFFFFFF)); textSize(20);
+			fill(color(0xFFAAAAAA));
 			text("Choose an image.\n(Use arrows. Confirm with ENTER.)", 20, 30) ;
+			fill(color(0xFFFFFFFF));
 		} else {
 			background(0);
-			fill(color(0xFFFFFFFF)); stroke(color(0xFFFFFFFF)); textSize(20);
 			text("Manual: \n\n" +
 				 "  - Use mouse to rotate view. \n" +
 				 "  - Press SPACE to run a single iteration \n" +
@@ -205,7 +213,8 @@ public class Interface extends PApplet {
 				 "     until stabilisation. \n" +
 				 "  - Press R to run again from start \n" +
 				 "     (with new seeds). \n" +
-				 "  - Press V to change radius meaning. \n" +
+				 "  - Press V to switch view (change radius meaning\n" +
+				 "     or show corresponding image). \n" +
 				 "  - Press I to change initialization mode. \n" +
 				 "  - Press +/- to change the number of seeds \n" +
 				 "     (applied when the algorithme initializes). \n\n" +
