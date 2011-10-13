@@ -25,18 +25,42 @@ public class Kmeans {
 		it = 0;
 	}
 	
-	public void init(int nbRep) {
-		rep      = new ColorPt[nbRep];
+	public void init(int nbRep, boolean kmeans) {
+		rep = new ColorPt[nbRep];
+		if (kmeans) {
+			double[] dist2 = new double[pts.length];
+			rep[0] = pts[(int) (Math.random()*pts.length)];
+			for (int i = 1; i < nbRep; i++) {
+				// calcul des poids
+				loss = 0;
+				for (int j = 0; j < pts.length; j++) {
+					double dloss = 4;
+					for (int k = 0; k < i; k++) {
+						double dl = pts[j].dist2(rep[k]);
+						if (dl < dloss) dloss = dl;
+					}
+					dist2[j] = dloss;
+					loss += dloss;
+				}
+				// random
+				double r = Math.random()*loss;
+				int j = 0;
+				while (r > dist2[j]) {
+					r -= dist2[j];
+					j++;
+				}
+				rep[i] = pts[j];
+			}	
+		} else {
+			for (int i = 0; i < nbRep; i++) {
+				rep[i] = pts[(int) (Math.random()*pts.length)];
+				for (int j = 0; j < i; j++) {
+					if (rep[j].equals(rep[i])) { i--; continue; }
+				}
+			}
+		}
 		repSize  = new int[nbRep];
 		repDist2 = new double[nbRep];
-		int i = 0;
-		while (i < nbRep) {
-			int k = (int)(Math.random()*pts.length);
-			for (int j = 0; j < i; j++) { if (repSize[j] == k) continue; }
-			rep[i]     = pts[k];
-			repSize[i] = k;
-			i++;
-		}
 		localizePts();
 	}
 	

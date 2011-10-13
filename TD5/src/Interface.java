@@ -6,66 +6,53 @@ import processing.core.*;
 
 public class Interface extends PApplet {
 
+	int nbRep       = 5;
+	double epsilon  = 0.0000000001;
+	String[] images = {"polytechnique.png","tux.png","firefox.png","pencils.png","blogcat.png"};
+	
+
 	PImage img;
+	int indexImg = -2;
 	PGraphicsOpenGL pgl;
 	GL gl;
 
-	// pixel colors 
 	Kmeans pts;
-	
-	int nbRep = 5;
-	double epsilon = 0.0000000001;
 	
 	float xmag, ymag = 0;
 	float newXmag, newYmag = 0;
 	
 	boolean distMode = true;
-
+	boolean kmeans = false;
+	
+	
 	public void setup() {
-		size(512, 512, OPENGL);  
-		img = loadImage("polytechnique.png");
-//		img = loadImage("tux.png");
-//		img = loadImage("firefox.png");
-//		img = loadImage("pencils.png");
-//		img = loadImage("blogcat.png");
-		loadPixels(); 
+		size(512, 512, OPENGL);
 		colorMode(RGB, 1, 1, 1);
 		pgl = (PGraphicsOpenGL) g;
 		gl = pgl.beginGL();
 	}
 	
 	public void draw() {
-		if (pts == null) {
-			background(0);
-			fill(color(0xFFFFFFFF)); stroke(color(0xFFFFFFFF)); textSize(20);
-			text("Manual: \n\n" +
-				 "  - Use mouse to rotate view. \n" +
-				 "  - Press SPACE to run a single iteration \n" +
-				 "     of the algorithm. \n" +
-				 "  - Press ENTER to run the algorithm \n" +
-				 "     until stabilisation. \n" +
-				 "  - Press R to run again from start \n" +
-				 "     (with new seeds). \n" +
-				 "  - Press M to change radius meaning. \n" +
-				 "  - Press +/- to change the number of seeds \n" +
-				 "     (applied when the algorithme initializes). \n\n" +
-				 "Press any key to start.", 20, 50);
-		} else {
-			background(0);
-			fill(color(0xFFFFFFFF)); stroke(color(0xFFFFFFFF)); textSize(20);
-			text("Iteration: " + ((pts.rep.length == 0) ? "-" : pts.it), 20, 50);
-			text("Loss: " +      ((pts.rep.length == 0) ? "-" : pts.loss), 20, 80);
-			text("N: " + nbRep, 450, 50);
-			text("Radius <=> ", 20, 450);
-			text(((distMode) ? "Maximal distance to \ncorresponding points" : "Number of \ncorresponding points"), 150, 450);
-			gl.glMatrixMode(GL.GL_PROJECTION);
-			gl.glLoadIdentity();
-			gl.glOrtho(-2,2,-2,2,-100,100);  
-			gl.glMatrixMode(GL.GL_PROJECTION);
-			gl.glLoadIdentity();
-			gl.glOrtho(-2,2,-2,2,-100,100);  
-			renderPointSet(); 
-		}
+		if (indexImg == -2) { setImg(0); return; }
+		if (indexImg >= 0)  { return; }
+		if (pts == null)    { return; }
+		background(0);
+		fill(color(0xFFFFFFFF)); stroke(color(0xFFFFFFFF)); textSize(20);
+		textAlign(RIGHT);
+		text("Initialization: " + ((kmeans) ? "k-means++" : "Random"), 482, 30);
+		text("N: " + nbRep, 482, 50);
+		textAlign(LEFT);
+		text("Iteration: " + ((pts.rep.length == 0) ? "-" : pts.it), 20, 50);
+		text("Loss: " +      ((pts.rep.length == 0) ? "-" : pts.loss), 20, 80);
+		text("Radius <=> ", 20, 450);
+		text(((distMode) ? "Maximal distance to \ncorresponding points" : "Number of \ncorresponding points"), 150, 450);
+		gl.glMatrixMode(GL.GL_PROJECTION);
+		gl.glLoadIdentity();
+		gl.glOrtho(-2,2,-2,2,-100,100);  
+		gl.glMatrixMode(GL.GL_PROJECTION);
+		gl.glLoadIdentity();
+		gl.glOrtho(-2,2,-2,2,-100,100);  
+		renderPointSet(); 
 	}
 
 	public void renderPointSet() { 
@@ -88,6 +75,34 @@ public class Interface extends PApplet {
 		plot(pts);
 		
 		plotEdges();
+	}
+	
+	public void keyPressed() {
+		if (indexImg >= 0) {
+			switch (keyCode) {
+				case LEFT : setImg(indexImg+images.length-1); break;
+				case RIGHT: setImg(indexImg+1);               break;
+				case ENTER: setImg(-1);                       break;
+			}
+		} else {
+			if (pts == null) { initPts(); return; }
+			switch (key) {
+				case ' ' :  if (pts.rep.length == 0) pts.init(nbRep, kmeans); else pts.iterate(); 
+							break;
+				case '\n':  if (pts.rep.length == 0) pts.init(nbRep, kmeans);
+							double l0 = 0;
+							while (l0 - pts.loss > epsilon || l0 == 0) {
+								l0 = pts.loss;
+								pts.iterate();
+							}
+							break;
+				case 'r' :  initPts(); break;
+				case 'v' :  distMode = !distMode; break;
+				case 'i' :  kmeans   = !kmeans;   break;
+				case '+' :  nbRep++; break;
+				case '-' :  nbRep--; break;
+			}			
+		}
 	}
 	
 	private void plot(Kmeans pts) {
@@ -166,22 +181,33 @@ public class Interface extends PApplet {
 		colorMode(RGB, 255, 255, 255); pts = new Kmeans(img); colorMode(RGB, 1, 1, 1);
 	}
 	
-	public void keyPressed() {
-		if (pts == null) { initPts(); return; }
-		switch (key) {
-			case ' ' :  if (pts.rep.length == 0) pts.init(nbRep); else pts.iterate(); 
-						break;
-			case '\n':  if (pts.rep.length == 0) pts.init(nbRep);
-						double l0 = 0;
-						while (l0 - pts.loss > epsilon || l0 == 0) {
-							l0 = pts.loss;
-							pts.iterate();
-						}
-						break;
-			case 'r' :  initPts(); break;
-			case 'm' :  distMode = !distMode; break;
-			case '+' :  nbRep++; break;
-			case '-' :  nbRep--; break;
+	private void setImg(int i) {
+		indexImg = i % images.length;
+		if (indexImg >= 0) {
+			img = loadImage(images[indexImg]);
+			background(0);
+			int m = Math.max(img.width, img.height);
+			float h = 512*((float) img.height)/m ;
+			float w = 512*((float) img.width)/m ;
+			image(img,(512-w)/2,(512-h)/2,w,h);
+			fill(color(0xFFFFFFFF)); stroke(color(0xFFFFFFFF)); textSize(20);
+			text("Choose an image.\n(Use arrows. Confirm with ENTER.)", 20, 30) ;
+		} else {
+			background(0);
+			fill(color(0xFFFFFFFF)); stroke(color(0xFFFFFFFF)); textSize(20);
+			text("Manual: \n\n" +
+				 "  - Use mouse to rotate view. \n" +
+				 "  - Press SPACE to run a single iteration \n" +
+				 "     of the algorithm. \n" +
+				 "  - Press ENTER to run the algorithm \n" +
+				 "     until stabilisation. \n" +
+				 "  - Press R to run again from start \n" +
+				 "     (with new seeds). \n" +
+				 "  - Press V to change radius meaning. \n" +
+				 "  - Press I to change initialization mode. \n" +
+				 "  - Press +/- to change the number of seeds \n" +
+				 "     (applied when the algorithme initializes). \n\n" +
+				 "Press any key to start.", 20, 50);
 		}
 	}
 	
