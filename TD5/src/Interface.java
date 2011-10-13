@@ -207,6 +207,7 @@ public class Interface extends PApplet {
 			showImage(img);
 			fill(color(0xFFAAAAAA));
 			text("Choose an image.\n(Use arrows. Confirm with ENTER.)", 20, 30) ;
+			text("Press O to open a personal image", 20, 490) ;
 			fill(color(0xFFFFFFFF));
 		} else {
 			background(0);
