@@ -1,5 +1,7 @@
 // 2011 INF555 Frank NIELSEN
 import javax.media.opengl.*;
+import javax.swing.JFileChooser;
+
 import processing.opengl.*;
 import processing.core.*;
 
@@ -25,6 +27,7 @@ public class Interface extends PApplet {
 	boolean kmeans = false;
 	
 	int view = 0;
+	
 	
 	public void setup() {
 		size(512, 512, OPENGL);
@@ -94,6 +97,7 @@ public class Interface extends PApplet {
 				case LEFT : setImg(indexImg+images.length-1); break;
 				case RIGHT: setImg(indexImg+1);               break;
 				case ENTER: setImg(-1);                       break;
+				case 79   : openF();                           break;
 			}
 		} else {
 			if (pts == null) { initPts(); res = img; return; }
@@ -114,6 +118,7 @@ public class Interface extends PApplet {
 				case 'i' :  kmeans   = !kmeans;   break;
 				case '+' :  nbRep++; break;
 				case '-' :  nbRep--; break;
+				case 's' :  saveF(); break;
 				case '0' :  pts = null; indexImg = -2; break;
 			}
 		}
@@ -217,7 +222,9 @@ public class Interface extends PApplet {
 				 "     or show corresponding image). \n" +
 				 "  - Press I to change initialization mode. \n" +
 				 "  - Press +/- to change the number of seeds \n" +
-				 "     (applied when the algorithme initializes). \n\n" +
+				 "     (applied when the algorithme initializes). \n" +
+				 "  - Press S to save the result. \n" +
+				 "  - Press 0 to restart the program. \n\n " +
 				 "Press any key to start.", 20, 50);
 		}
 	}
@@ -230,4 +237,18 @@ public class Interface extends PApplet {
 		image(img,(512-w)/2,(512-h)/2,w,h);
 	}
 	
+	
+	private void openF() {
+		String f = selectInput();
+		if (f != null) {
+			img = loadImage(f);
+			setImg(-1);
+		}
+	}
+
+	private void saveF() {
+		String f = selectOutput();
+		if (f != null) res.save(f);
+	}
+
 }
