@@ -5,9 +5,9 @@ public class ColorPt {
 	int rep;
 	
 	ColorPt (float r, float g, float b) {
-		this.r = r/255;
-		this.g = g/255;
-		this.b = b/255;
+		this.r = r;
+		this.g = g;
+		this.b = b;
 		this.rep = -1;
 	}
 	

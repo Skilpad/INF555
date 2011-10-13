@@ -15,6 +15,7 @@ public class Interface extends PApplet {
 	int indexImg = -2;
 	PGraphicsOpenGL pgl;
 	GL gl;
+	PImage res;
 
 	Kmeans pts;
 	
@@ -24,6 +25,7 @@ public class Interface extends PApplet {
 	boolean distMode = true;
 	boolean kmeans = false;
 	
+	boolean resMode = false;
 	
 	public void setup() {
 		size(512, 512, OPENGL);
@@ -36,6 +38,7 @@ public class Interface extends PApplet {
 		if (indexImg == -2) { setImg(0); return; }
 		if (indexImg >= 0)  { return; }
 		if (pts == null)    { return; }
+		if (resMode)        { background(0); showImage(res); return; }
 		background(0);
 		fill(color(0xFFFFFFFF)); stroke(color(0xFFFFFFFF)); textSize(20);
 		textAlign(RIGHT);
@@ -86,6 +89,7 @@ public class Interface extends PApplet {
 			}
 		} else {
 			if (pts == null) { initPts(); return; }
+			if (resMode)     { resMode = false; return; }
 			switch (key) {
 				case ' ' :  if (pts.rep.length == 0) pts.init(nbRep, kmeans); else pts.iterate(); 
 							break;
@@ -101,7 +105,9 @@ public class Interface extends PApplet {
 				case 'i' :  kmeans   = !kmeans;   break;
 				case '+' :  nbRep++; break;
 				case '-' :  nbRep--; break;
-			}			
+				case 'a' :  if (pts.rep.length == 0) res = img; else res = pts.apply(img); resMode = true; break;
+				case '0' :  pts = null; indexImg = -2; resMode = false; break;
+			}
 		}
 	}
 	
@@ -121,7 +127,7 @@ public class Interface extends PApplet {
 				ColorPt p = pts.rep[i];
 				gl.glColor3f(p.r,p.g,p.b);
 				gl.glVertex3f(p.r,p.g,p.b);
-				gl.glEnd();			
+				gl.glEnd();
 			}
 		}
 	}
@@ -178,18 +184,14 @@ public class Interface extends PApplet {
 	}
 
 	private void initPts() {
-		colorMode(RGB, 255, 255, 255); pts = new Kmeans(img); colorMode(RGB, 1, 1, 1);
+		pts = new Kmeans(img); 
 	}
 	
 	private void setImg(int i) {
 		indexImg = i % images.length;
 		if (indexImg >= 0) {
 			img = loadImage(images[indexImg]);
-			background(0);
-			int m = Math.max(img.width, img.height);
-			float h = 512*((float) img.height)/m ;
-			float w = 512*((float) img.width)/m ;
-			image(img,(512-w)/2,(512-h)/2,w,h);
+			showImage(img);
 			fill(color(0xFFFFFFFF)); stroke(color(0xFFFFFFFF)); textSize(20);
 			text("Choose an image.\n(Use arrows. Confirm with ENTER.)", 20, 30) ;
 		} else {
@@ -209,6 +211,14 @@ public class Interface extends PApplet {
 				 "     (applied when the algorithme initializes). \n\n" +
 				 "Press any key to start.", 20, 50);
 		}
+	}
+	
+	private void showImage(PImage img) {
+		background(0);
+		int m = Math.max(img.width, img.height);
+		float h = 512*((float) img.height)/m ;
+		float w = 512*((float) img.width)/m ;
+		image(img,(512-w)/2,(512-h)/2,w,h);
 	}
 	
 }

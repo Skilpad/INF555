@@ -15,7 +15,6 @@ public class Kmeans {
 	Kmeans(PImage img) {
 		int n = img.width*img.height;
 		pts = new ColorPt[n];
-		System.out.println("Creating the 3D color point set for "+n+" pixels.");
 		for (int i=0;i<n;i++) {
 			pts[i] = new ColorPt(img.parent.red(img.pixels[i]), img.parent.green(img.pixels[i]), img.parent.blue(img.pixels[i]));
 		}
@@ -85,6 +84,31 @@ public class Kmeans {
 		for (ColorPt r : rep) { r.mid(); }
 		localizePts();
 		it++;
+	}
+	
+	
+	public PImage apply(PImage img) {
+		PImage res = img.parent.createImage(img.width,img.height,img.parent.RGB);
+		int n = img.width * img.height;
+		for (int i = 0; i < n; i++) {
+			int c = img.pixels[i];
+			ColorPt r = representative(new ColorPt(img.parent.red(c), img.parent.green(c), img.parent.blue(c)));
+			res.pixels[i] = res.parent.color(r.r, r.g, r.b);
+		}
+		return res;
+	}
+	
+	public ColorPt representative(ColorPt p) {
+		ColorPt res = new ColorPt();
+		double dloss = 4;
+		for (ColorPt r : rep) {
+			double dl = p.dist2(r);
+			if (dl < dloss) {
+				dloss = dl;
+				res = r;
+			}
+		}
+		return res;
 	}
 	
 }
