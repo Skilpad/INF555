@@ -16,11 +16,10 @@ public class Interface extends PApplet {
 		dst = new PImage(Constants.destWidth, Constants.destHeight);
 		pgm = new EfrosLeung(src, dst);
 		pgm.start();
-	} 
+	}
 
 	public void draw() {
 		image(dst, 0, 0);
 	}
 	
-
 }

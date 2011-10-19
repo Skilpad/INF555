@@ -4,8 +4,10 @@ import processing.core.PImage;
 public class Representant {
 
 	float[] values;
+	int     color;
 	
 	public Representant(PImage img, int x, int y) {
+		this.color = img.get(x, y);
 		int s = Constants.s;
 		int i = 0;
 		values = new float[6*s*(s+1)];
@@ -31,10 +33,9 @@ public class Representant {
 			d += (values[i]-rep.values[i])*(values[i]-rep.values[i]);
 		return d;
 	}
-	
-	public void print() {
-		for (int i = 0; i < values.length; i++)
-			System.out.println(values[i]);
+
+	public float dist(Representant rep) {
+		return (float) Math.sqrt(dist2(rep));
 	}
-	
+
 }
