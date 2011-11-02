@@ -58,5 +58,47 @@ public class CPS {
 			if (CPS_Re[i][j] > mx) { mx = CPS_Re[i][j]; r = new Point(i,j); }	
 		return r;
 	}
+	
+	public static void applyTrans(Point t) {
+		int ti = (t.x < 0) ? -t.x : 0;
+		int tj = (t.y < 0) ? -t.y : 0;
+		PPM res = new PPM(w+Math.abs(t.y),h+Math.abs(t.x));
+		int[][] colored = new int[h+Math.abs(t.x)][w+Math.abs(t.y)];
+		for (int i=0; i<h; i++) for (int j=0; j<w; j++) {
+			if (colored[i+ti][j+tj] == 0) {
+				res.r[i+ti][j+tj] = src1.r[i+ti][j+tj];
+				res.g[i+ti][j+tj] = src1.g[i+ti][j+tj];
+				res.b[i+ti][j+tj] = src1.b[i+ti][j+tj];
+			} else {
+				res.r[i+ti][j+tj] = (res.r[i+ti][j+tj]+src1.r[i+ti][j+tj])/2;
+				res.g[i+ti][j+tj] = (res.g[i+ti][j+tj]+src1.g[i+ti][j+tj])/2;
+				res.b[i+ti][j+tj] = (res.b[i+ti][j+tj]+src1.b[i+ti][j+tj])/2;				
+			}
+			colored[i+ti][j+tj] = 1;
+			if (colored[i+ti+t.x][j+tj+t.y] == 0) {
+				res.r[i+ti+t.x][j+tj+t.y] = src2.r[i+ti][j+tj];
+				res.g[i+ti+t.x][j+tj+t.y] = src2.g[i+ti][j+tj];
+				res.b[i+ti+t.x][j+tj+t.y] = src2.b[i+ti][j+tj];
+			} else {
+				res.r[i+ti+t.x][j+tj+t.y] = (res.r[i+ti][j+tj]+src2.r[i+ti][j+tj])/2;
+				res.g[i+ti+t.x][j+tj+t.y] = (res.g[i+ti][j+tj]+src2.g[i+ti][j+tj])/2;
+				res.b[i+ti+t.x][j+tj+t.y] = (res.b[i+ti][j+tj]+src2.b[i+ti][j+tj])/2;
+			}
+			colored[i+ti+t.x][j+tj+t.y] = 1;
+		}
+		System.out.println("Translation required:  x = " + t.y + " px");
+		System.out.println("                       y = " + t.x + " px");
+		res.show();
+	}
 
+	
+	public static void main(String[] args) {
+		PPM imA = new PPM("xlake1.ppm");
+		PPM imB = new PPM("xlake2.ppm");
+		imA.show(); imB.show();
+		init(imA,imB);
+		calcCPS();
+		applyTrans(optimalTrans());
+	}
+	
 }
