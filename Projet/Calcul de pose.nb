@@ -1,0 +1,460 @@
+(* Content-type: application/vnd.wolfram.mathematica *)
+
+(*** Wolfram Notebook File ***)
+(* http://www.wolfram.com/nb *)
+
+(* CreatedBy='Mathematica 8.0' *)
+
+(*CacheID: 234*)
+(* Internal cache information:
+NotebookFileLineBreakTest
+NotebookFileLineBreakTest
+NotebookDataPosition[       157,          7]
+NotebookDataLength[     12724,        451]
+NotebookOptionsPosition[     11661,        420]
+NotebookOutlinePosition[     12435,        444]
+CellTagsIndexPosition[     12392,        441]
+WindowFrame->Normal*)
+
+(* Beginning of Notebook Content *)
+Notebook[{
+Cell[TextData[{
+ "On consid\[EGrave]re des points du plan \[ScriptCapitalP] : z \[LongEqual] \
+0. \nOn suppose que la position de la cam\[EAcute]ra est d\[EAcute]crite pas \
+la matrice de rotation R et le vecteur translation T.\nOn consid\[EGrave]re \
+un point M \[LongEqual] (x,y,0) \[Element] \[ScriptCapitalP], vu par la cam\
+\[EAcute]ra en (u,v). (On suppose d\[EAcute]j\[AGrave] compens\[EAcute]e la \
+distortion de la cam\[EAcute]ra.)\nOn a donc :  ",
+ StyleBox["s",
+  FontSlant->"Italic"],
+ " ",
+ Cell[BoxData[
+  FormBox[
+   RowBox[{"(", "\[NoBreak]", GridBox[{
+      {"u"},
+      {
+       RowBox[{"v", "\[IndentingNewLine]", "1"}]}
+     }], "\[NoBreak]", ")"}], TraditionalForm]]],
+ " \[LongEqual] ",
+ StyleBox["R M + T",
+  FontSlant->"Italic"],
+ " , avec s \[Element] \[DoubleStruckCapitalR]. On \[EAcute]crit :"
+}], "Text",
+ CellChangeTimes->{{3.529386515385617*^9, 3.5293865563079576`*^9}, {
+   3.529386589406851*^9, 3.529386713723961*^9}, {3.5293867651099005`*^9, 
+   3.5293869912768364`*^9}, {3.5293870250217667`*^9, 3.529387026586856*^9}, {
+   3.5293870753236437`*^9, 3.5293870969848824`*^9}, {3.5293871340140004`*^9, 
+   3.5293872331686716`*^9}, {3.529387264672474*^9, 3.529387292683076*^9}, 
+   3.529387341386862*^9, {3.529388092718835*^9, 3.5293882271555243`*^9}, {
+   3.5293882654397144`*^9, 3.5293882859578876`*^9}, 3.529389771979883*^9}],
+
+Cell[TextData[{
+ Cell[BoxData[
+  FormBox[
+   RowBox[{"(", "\[NoBreak]", GridBox[{
+      {"x"},
+      {
+       RowBox[{"y", "\[IndentingNewLine]", "0"}]}
+     }], "\[NoBreak]", ")"}], TraditionalForm]]],
+ " \[LongEqual] ",
+ StyleBox["s A",
+  FontSlant->"Italic"],
+ " ",
+ Cell[BoxData[
+  FormBox[
+   RowBox[{"(", "\[NoBreak]", GridBox[{
+      {"u"},
+      {
+       RowBox[{"v", "\[IndentingNewLine]", "1"}]}
+     }], "\[NoBreak]", ")"}], TraditionalForm]]],
+ " + ",
+ StyleBox["B",
+  FontSlant->"Italic"],
+ "               (1)"
+}], "InlineFormula",
+ CellChangeTimes->{{3.5293896950714846`*^9, 3.5293897167837267`*^9}}],
+
+Cell[TextData[{
+ "avec : ",
+ StyleBox["A",
+  FontSlant->"Italic"],
+ " \[LongEqual] ",
+ Cell[BoxData[
+  FormBox[
+   SuperscriptBox["R", 
+    RowBox[{"-", "1"}]], TraditionalForm]]],
+ ", ",
+ StyleBox["B",
+  FontSlant->"Italic"],
+ " \[LongEqual] \[Dash] ",
+ Cell[BoxData[
+  FormBox[
+   SuperscriptBox["R", 
+    RowBox[{"-", "1"}]], TraditionalForm]]],
+ " ",
+ StyleBox["T ",
+  FontSlant->"Italic"],
+ ".\nSoit H \[Element] ",
+ Cell[BoxData[
+  FormBox[
+   RowBox[{
+    SubscriptBox[
+     StyleBox["M",
+      FontSlant->"Plain"], "3"], "(", "\[DoubleStruckCapitalR]", ")"}], 
+   TraditionalForm]]],
+ " tel que l\[CloseCurlyQuote]on passe des coordonn\[EAcute]es (x,y) aux \
+coordonn\[EAcute]es (u,v) par l\[CloseCurlyQuote]\[EAcute]quation : "
+}], "Text",
+ CellChangeTimes->{3.529389739798043*^9}],
+
+Cell[TextData[{
+ Cell[BoxData[
+  FormBox[
+   RowBox[{"(", "\[NoBreak]", GridBox[{
+      {"u"},
+      {
+       RowBox[{"v", "\[IndentingNewLine]", "1"}]}
+     }], "\[NoBreak]", ")"}], TraditionalForm]]],
+ " ",
+ "\[LongEqual]",
+ " ",
+ StyleBox["\[Lambda] H ",
+  FontSlant->"Italic"],
+ " ",
+ Cell[BoxData[
+  FormBox[
+   RowBox[{"(", "\[NoBreak]", GridBox[{
+      {"x"},
+      {
+       RowBox[{"y", "\[IndentingNewLine]", "1"}]}
+     }], "\[NoBreak]", ")"}], TraditionalForm]]],
+ "                  (2)"
+}], "InlineFormula",
+ CellChangeTimes->{{3.5293897616792946`*^9, 3.529389766881592*^9}, 
+   3.5293898589868603`*^9}],
+
+Cell[TextData[{
+ "\nEn calculant ",
+ StyleBox["s",
+  FontSlant->"Italic"],
+ " et ",
+ StyleBox["\[Lambda]",
+  FontSlant->"Italic"],
+ " dans les \[EAcute]quations (1) et (2), on transforme ces \[EAcute]quations \
+respectivement en :"
+}], "Text",
+ CellChangeTimes->{{3.529389777390193*^9, 3.5293898285901213`*^9}}],
+
+Cell[TextData[{
+ Cell[BoxData[
+  FormBox[
+   RowBox[{"(", "\[NoBreak]", GridBox[{
+      {"x"},
+      {"y"}
+     }], "\[NoBreak]", ")"}], TraditionalForm]],
+  FormatType->"TraditionalForm"],
+ " \[LongEqual] ",
+ Cell[BoxData[
+  FormBox[
+   FractionBox[
+    RowBox[{"\[Dash]", " ", 
+     SubscriptBox["B", "3"]}], 
+    RowBox[{
+     RowBox[{
+      SubscriptBox["A", "31"], "u"}], " ", "+", " ", 
+     RowBox[{
+      SubscriptBox["A", "32"], "v"}], " ", "+", " ", 
+     SubscriptBox["A", "33"]}]], TraditionalForm]],
+  FormatType->"TraditionalForm"],
+ Cell[BoxData[
+  FormBox[
+   RowBox[{"[", " ", 
+    RowBox[{"(", "\[NoBreak]", 
+     RowBox[{GridBox[{
+        {
+         SubscriptBox["A", "11"]},
+        {
+         SubscriptBox["A", "21"]}
+       }], GridBox[{
+        {
+         SubscriptBox["A", "12"]},
+        {
+         SubscriptBox["A", "22"]}
+       }]}], "\[NoBreak]", ")"}]}], TraditionalForm]],
+  FormatType->"TraditionalForm"],
+ " ",
+ Cell[BoxData[
+  FormBox[
+   RowBox[{"(", "\[NoBreak]", GridBox[{
+      {"u"},
+      {"v"}
+     }], "\[NoBreak]", ")"}], TraditionalForm]],
+  FormatType->"TraditionalForm"],
+ " + ",
+ Cell[BoxData[
+  FormBox[
+   RowBox[{
+    RowBox[{"(", "\[NoBreak]", GridBox[{
+       {
+        SubscriptBox["A", "13"]},
+       {
+        SubscriptBox["A", "23"]}
+      }], "\[NoBreak]", ")"}], " ", "]"}], TraditionalForm]],
+  FormatType->"TraditionalForm"],
+ " + ",
+ Cell[BoxData[
+  FormBox[
+   RowBox[{"(", "\[NoBreak]", GridBox[{
+      {
+       SubscriptBox["B", "1"]},
+      {
+       SubscriptBox["B", "2"]}
+     }], "\[NoBreak]", ")"}], TraditionalForm]],
+  FormatType->"TraditionalForm"],
+ " \n                                                                  \
+\[LongEqual] ",
+ Cell[BoxData[
+  FormBox[
+   FractionBox[
+    RowBox[{"\[Dash]", " ", 
+     SubscriptBox["B", "3"]}], 
+    RowBox[{
+     RowBox[{
+      SubscriptBox["A", "31"], "u"}], " ", "+", " ", 
+     RowBox[{
+      SubscriptBox["A", "32"], "v"}], " ", "+", " ", 
+     SubscriptBox["A", "33"]}]], TraditionalForm]]],
+ " ",
+ Cell[BoxData[
+  FormBox[
+   RowBox[{"(", "\[NoBreak]", 
+    RowBox[{GridBox[{
+       {
+        RowBox[{"(", 
+         RowBox[{
+          SubscriptBox["A", "11"], "-", " ", 
+          RowBox[{
+           FractionBox[
+            SubscriptBox["B", "1"], 
+            SubscriptBox["B", "3"]], 
+           SubscriptBox["A", "31"]}]}], ")"}]},
+       {
+        RowBox[{"(", 
+         RowBox[{
+          SubscriptBox["A", "21"], "-", " ", 
+          RowBox[{
+           FractionBox[
+            SubscriptBox["B", "2"], 
+            SubscriptBox["B", "3"]], 
+           SubscriptBox["A", "31"]}]}], ")"}]}
+      }], GridBox[{
+       {
+        RowBox[{"(", 
+         RowBox[{
+          SubscriptBox["A", "12"], "-", " ", 
+          RowBox[{
+           FractionBox[
+            SubscriptBox["B", "1"], 
+            SubscriptBox["B", "3"]], 
+           SubscriptBox["A", "32"]}]}], ")"}]},
+       {
+        RowBox[{"(", 
+         RowBox[{
+          SubscriptBox["A", "22"], "-", " ", 
+          RowBox[{
+           FractionBox[
+            SubscriptBox["B", "2"], 
+            SubscriptBox["B", "3"]], 
+           SubscriptBox["A", "32"]}]}], ")"}]}
+      }], GridBox[{
+       {
+        RowBox[{"(", 
+         RowBox[{
+          SubscriptBox["A", "13"], "-", " ", 
+          RowBox[{
+           FractionBox[
+            SubscriptBox["B", "1"], 
+            SubscriptBox["B", "3"]], 
+           SubscriptBox["A", "33"]}]}], ")"}]},
+       {
+        RowBox[{"(", 
+         RowBox[{
+          SubscriptBox["A", "23"], "-", " ", 
+          RowBox[{
+           FractionBox[
+            SubscriptBox["B", "2"], 
+            SubscriptBox["B", "3"]], 
+           SubscriptBox["A", "33"]}]}], ")"}]}
+      }]}], "\[NoBreak]", ")"}], TraditionalForm]],
+  FormatType->"TraditionalForm"],
+ " ",
+ Cell[BoxData[
+  FormBox[
+   RowBox[{"(", "\[NoBreak]", GridBox[{
+      {"u"},
+      {
+       RowBox[{"v", "\[IndentingNewLine]", "1"}]}
+     }], "\[NoBreak]", ")"}], TraditionalForm]]],
+ "                  (1\[CloseCurlyQuote])"
+}], "InlineFormula",
+ CellChangeTimes->{{3.5293898417438736`*^9, 3.529390124840066*^9}, {
+  3.5293902012824383`*^9, 3.52939021354914*^9}}],
+
+Cell["et :", "Text",
+ CellChangeTimes->{{3.529390108670141*^9, 3.529390109445185*^9}}],
+
+Cell[TextData[{
+ Cell[BoxData[
+  FormBox[
+   RowBox[{"(", "\[NoBreak]", GridBox[{
+      {"x"},
+      {"y"}
+     }], "\[NoBreak]", ")"}], TraditionalForm]],
+  FormatType->"TraditionalForm"],
+ " \[LongEqual] ",
+ Cell[BoxData[
+  FormBox[
+   FractionBox["1", 
+    RowBox[{
+     RowBox[{
+      SubscriptBox["H", "31"], "u"}], " ", "+", " ", 
+     RowBox[{
+      SubscriptBox["H", "32"], "v"}], " ", "+", " ", 
+     SubscriptBox["H", "33"]}]], TraditionalForm]]],
+ " ",
+ Cell[BoxData[
+  FormBox[
+   RowBox[{"(", "\[NoBreak]", 
+    RowBox[{GridBox[{
+       {
+        SubscriptBox["H", "11"]},
+       {
+        SubscriptBox["H", "21"]}
+      }], GridBox[{
+       {
+        SubscriptBox["H", "12"], 
+        SubscriptBox["H", "13"]},
+       {
+        SubscriptBox["H", "22"], 
+        SubscriptBox["H", "23"]}
+      }]}], "\[NoBreak]", ")"}], TraditionalForm]],
+  FormatType->"TraditionalForm"],
+ " ",
+ Cell[BoxData[
+  FormBox[
+   RowBox[{"(", "\[NoBreak]", GridBox[{
+      {"u"},
+      {
+       RowBox[{"v", "\[IndentingNewLine]", "1"}]}
+     }], "\[NoBreak]", ")"}], TraditionalForm]]],
+ "                                   (2\[CloseCurlyQuote])"
+}], "InlineFormula",
+ CellChangeTimes->{{3.5293898417438736`*^9, 3.529390199259322*^9}}],
+
+Cell["\<\
+
+Identifier les coefficients entre (1\[CloseCurlyQuote]) et (2\
+\[CloseCurlyQuote]) donne :\
+\>", "Text",
+ CellChangeTimes->{{3.5293902946547785`*^9, 3.529390342738529*^9}}],
+
+Cell[TextData[{
+ Cell[BoxData[
+  FormBox[
+   RowBox[{
+    SubscriptBox["B", "3"], "=", " ", "\[Kappa]", " "}], TraditionalForm]]],
+ "\n",
+ Cell[BoxData[
+  FormBox[
+   RowBox[{
+    SubscriptBox["A", 
+     RowBox[{
+      StyleBox["3",
+       FontSlant->"Plain"], ",", 
+      StyleBox["j",
+       FontSlant->"Plain"]}]], "=", " ", 
+    RowBox[{"-", " ", "\[Kappa]"}]}], TraditionalForm]]],
+ " \[Alpha] ",
+ Cell[BoxData[
+  FormBox[
+   SubscriptBox["H", 
+    RowBox[{"3", ",", 
+     StyleBox["j",
+      FontSlant->"Plain"]}]], TraditionalForm]],
+  FormatType->"TraditionalForm"],
+ "        ( j\[Element]{1,2,3} )\n",
+ Cell[BoxData[
+  FormBox[
+   RowBox[{
+    SubscriptBox["A", 
+     RowBox[{
+      StyleBox["i",
+       FontSlant->"Plain"], ",", 
+      StyleBox["j",
+       FontSlant->"Plain"]}]], "-", " ", 
+    RowBox[{
+     FractionBox[
+      SubscriptBox["B", "i"], "\[Kappa]"], 
+     SubscriptBox["A", 
+      RowBox[{"3", ",", 
+       StyleBox["j",
+        FontSlant->"Plain"]}]]}]}], TraditionalForm]]],
+ " = \[Alpha] ",
+ Cell[BoxData[
+  FormBox[
+   SubscriptBox["H", 
+    RowBox[{
+     StyleBox["i",
+      FontSlant->"Plain"], ",", 
+     StyleBox["j",
+      FontSlant->"Plain"]}]], TraditionalForm]],
+  FormatType->"TraditionalForm"],
+ "        ( i\[Element]{1,2} , j\[Element]{1,2,3} )"
+}], "InlineFormula",
+ CellChangeTimes->{{3.529390665675*^9, 3.5293906656840005`*^9}, {
+  3.529390716505907*^9, 3.5293907646576614`*^9}, {3.529390816417622*^9, 
+  3.529390846125321*^9}, {3.5293912303022947`*^9, 3.5293912303022947`*^9}, {
+  3.529391381424938*^9, 3.5293915863126574`*^9}, {3.529391672287575*^9, 
+  3.529391688100479*^9}, {3.5293917308789263`*^9, 3.5293919169115667`*^9}, {
+  3.529391973934828*^9, 3.529392039923602*^9}}]
+},
+WindowSize->{1622, 1122},
+WindowMargins->{{-2, Automatic}, {0, Automatic}},
+Magnification->2.000000238418579,
+FrontEndVersion->"8.0 for Microsoft Windows (64-bit) (February 23, 2011)",
+StyleDefinitions->Notebook[{
+   Cell[
+    StyleData[StyleDefinitions -> "Default.nb"]], 
+   Cell[
+    StyleData["InlineFormula"], TextAlignment -> Center, TextJustification -> 
+    0.]}, WindowSize -> {707, 867}, 
+  WindowMargins -> {{283, Automatic}, {58, Automatic}}, Visible -> False, 
+  FrontEndVersion -> "8.0 for Microsoft Windows (64-bit) (February 23, 2011)",
+   StyleDefinitions -> "PrivateStylesheetFormatting.nb"]
+]
+(* End of Notebook Content *)
+
+(* Internal cache information *)
+(*CellTagsOutline
+CellTagsIndex->{}
+*)
+(*CellTagsIndex
+CellTagsIndex->{}
+*)
+(*NotebookFileOutline
+Notebook[{
+Cell[557, 20, 1357, 28, 223, "Text"],
+Cell[1917, 50, 615, 24, 111, "InlineFormula"],
+Cell[2535, 76, 790, 31, 89, "Text"],
+Cell[3328, 109, 616, 24, 111, "InlineFormula"],
+Cell[3947, 135, 311, 10, 89, "Text"],
+Cell[4261, 147, 4164, 153, 177, "InlineFormula"],
+Cell[8428, 302, 86, 1, 55, "Text"],
+Cell[8517, 305, 1228, 46, 111, "InlineFormula"],
+Cell[9748, 353, 183, 5, 89, "Text"],
+Cell[9934, 360, 1723, 58, 119, "InlineFormula"]
+}
+]
+*)
+
+(* End of internal cache information *)

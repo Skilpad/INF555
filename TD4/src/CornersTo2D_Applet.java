@@ -12,7 +12,8 @@ public class CornersTo2D_Applet extends PApplet {
 	
 	public void setup() {
 		from = new Stack<Pt>();
-		from_img = loadImage("bookcovers1.png");
+//		from_img = loadImage("bookcovers1.png");
+		from_img = loadImage("echec1.jpg");
 		n = 0;
 		size(from_img.width, from_img.height);
 		textSize(32);
@@ -43,7 +44,7 @@ public class CornersTo2D_Applet extends PApplet {
 			to.push(new Pt(m,m));
 			to.push(new Pt(0,m));
 			Matrix h = Homographie.find(from, to);
-			System.out.println("The Homography Matrix is: "); h.print(10,2);
+			System.out.println("The Homography Matrix is: "); h.print(20,15);
 			from_distorted = Homographie.apply(h, from_img);
 			background(0);
 			image(from_distorted, (from_img.width-m)/2, (from_img.height-m)/2);

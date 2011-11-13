@@ -1,0 +1,241 @@
+(* Content-type: application/vnd.wolfram.mathematica *)
+
+(*** Wolfram Notebook File ***)
+(* http://www.wolfram.com/nb *)
+
+(* CreatedBy='Mathematica 8.0' *)
+
+(*CacheID: 234*)
+(* Internal cache information:
+NotebookFileLineBreakTest
+NotebookFileLineBreakTest
+NotebookDataPosition[       157,          7]
+NotebookDataLength[      7165,        231]
+NotebookOptionsPosition[      6879,        217]
+NotebookOutlinePosition[      7266,        233]
+CellTagsIndexPosition[      7223,        230]
+WindowFrame->Normal*)
+
+(* Beginning of Notebook Content *)
+Notebook[{
+Cell[TextData[{
+ "\n\nOn recherche le point P \[LongEqual] (x,y,z) minimisant :  ",
+ Cell[BoxData[
+  FormBox[
+   SuperscriptBox["D", "2"], TraditionalForm]],
+  FormatType->"TraditionalForm"],
+ " :\[LongEqual] ",
+ Cell[BoxData[
+  FormBox[
+   RowBox[{
+    UnderscriptBox["\[Sum]", "i"], " ", 
+    RowBox[{
+     SuperscriptBox["d", "2"], "(", 
+     RowBox[{"P", ",", 
+      SubscriptBox["\[ScriptCapitalD]", "i"]}]}]}], TraditionalForm]],
+  FormatType->"TraditionalForm"],
+ ") , avec ",
+ Cell[BoxData[
+  FormBox[
+   RowBox[{"{", 
+    SubscriptBox["\[ScriptCapitalD]", "i"], "}"}], TraditionalForm]],
+  FormatType->"TraditionalForm"],
+ " l\[CloseCurlyQuote]ensemble des droites sens\[EAcute]es contenir P.\nOn \
+\[EAcute]crit : ",
+ Cell[BoxData[
+  FormBox[
+   SubscriptBox["\[ScriptCapitalD]", "i"], TraditionalForm]],
+  FormatType->"TraditionalForm"],
+ " :\[LongEqual] ",
+ Cell[BoxData[
+  FormBox[
+   RowBox[{"{", " ", 
+    SubscriptBox["M", "i"]}], TraditionalForm]],
+  FormatType->"TraditionalForm"],
+ " + \[Lambda] ",
+ Cell[BoxData[
+  FormBox[
+   SubscriptBox["v", "i"], TraditionalForm]],
+  FormatType->"TraditionalForm"],
+ " | \[Lambda] \[Element] \[DoubleStruckCapitalR] } , avec ",
+ Cell[BoxData[
+  FormBox[
+   RowBox[{"||", 
+    SubscriptBox["v", "i"], "||"}], TraditionalForm]],
+  FormatType->"TraditionalForm"],
+ " \[LongEqual] 1.\nOn obtient :  ",
+ Cell[BoxData[
+  FormBox[
+   SuperscriptBox["D", "2"], TraditionalForm]],
+  FormatType->"TraditionalForm"],
+ " :\[LongEqual] ",
+ Cell[BoxData[
+  FormBox[
+   RowBox[{
+    UnderscriptBox["\[Sum]", "i"], " ", 
+    RowBox[{"||", 
+     RowBox[{
+      RowBox[{"(", 
+       RowBox[{"P", "-", 
+        SubscriptBox["M", "i"]}], ")"}], "\[Wedge]", 
+      SubscriptBox["v", "i"]}], 
+     SuperscriptBox["||", "2"]}]}], TraditionalForm]],
+  FormatType->"TraditionalForm"],
+ "\nP est donn\[EAcute] par l\[CloseCurlyQuote]\[EAcute]quation : ",
+ Cell[BoxData[
+  FormBox[
+   SuperscriptBox[
+    StyleBox[
+     RowBox[{
+      StyleBox["d",
+       FontSlant->"Plain"], "D"}]], "2"], TraditionalForm]],
+  FormatType->"TraditionalForm"],
+ " \[LongEqual] 0.  Cette \[EAcute]quation devient, en d\[EAcute]veloppant ",
+ Cell[BoxData[
+  FormBox[
+   SuperscriptBox["D", "2"], TraditionalForm]],
+  FormatType->"TraditionalForm"],
+ " :\n",
+ StyleBox["\n     ",
+  FontFamily->"Bell MT"],
+ Cell[BoxData[
+  RowBox[{"(", 
+   RowBox[{
+    RowBox[{
+     SubscriptBox["\[CapitalSigma]", "i"], 
+     TagBox[
+      RowBox[{" ", 
+       RowBox[{"(", "\[NoBreak]", 
+        TagBox[GridBox[{
+           {
+            RowBox[{"(", 
+             RowBox[{
+              SuperscriptBox["vy", "2"], "+", 
+              SuperscriptBox["vz", "2"]}], ")"}], 
+            RowBox[{
+             RowBox[{"-", "vx"}], " ", "vy"}], 
+            RowBox[{
+             RowBox[{"-", "vx"}], " ", "vz"}]},
+           {
+            RowBox[{
+             RowBox[{"-", "vx"}], " ", "vy", " "}], 
+            RowBox[{"(", 
+             RowBox[{
+              SuperscriptBox["vx", "2"], "+", 
+              SuperscriptBox["vz", "2"]}], ")"}], 
+            RowBox[{
+             RowBox[{"-", "vy"}], " ", "vz"}]},
+           {
+            RowBox[{
+             RowBox[{"-", "vx"}], " ", "vz", " "}], 
+            RowBox[{
+             RowBox[{"-", "vy"}], " ", "vz"}], 
+            RowBox[{"(", 
+             RowBox[{
+              SuperscriptBox["vx", "2"], " ", "+", 
+              SuperscriptBox["vy", "2"]}], ")"}]}
+          },
+          
+          GridBoxAlignment->{
+           "Columns" -> {{Center}}, "ColumnsIndexed" -> {}, 
+            "Rows" -> {{Baseline}}, "RowsIndexed" -> {}},
+          GridBoxSpacings->{"Columns" -> {
+              Offset[0.27999999999999997`], {
+               Offset[0.5599999999999999]}, 
+              Offset[0.27999999999999997`]}, "ColumnsIndexed" -> {}, "Rows" -> {
+              Offset[0.2], {
+               Offset[0.4]}, 
+              Offset[0.2]}, "RowsIndexed" -> {}}],
+         Column], "\[NoBreak]", ")"}], ")"}],
+      Function[BoxForm`e$, 
+       MatrixForm[BoxForm`e$]]], " ", 
+     RowBox[{"(", "\[NoBreak]", GridBox[{
+        {"x"},
+        {"y"},
+        {"z"}
+       }], "\[NoBreak]", ")"}]}], "  ", "\[Equal]", "  ", 
+    RowBox[{
+     TagBox[
+      RowBox[{
+       SubscriptBox["\[CapitalSigma]", "i"], "  ", 
+       RowBox[{"(", " ", 
+        RowBox[{"(", "\[NoBreak]", 
+         TagBox[GridBox[{
+            {
+             RowBox[{"(", 
+              RowBox[{
+               SuperscriptBox["vy", "2"], "+", 
+               SuperscriptBox["vz", "2"]}], ")"}], 
+             RowBox[{
+              RowBox[{"-", "vx"}], " ", "vy"}], 
+             RowBox[{
+              RowBox[{"-", "vx"}], " ", "vz"}]},
+            {
+             RowBox[{
+              RowBox[{"-", "vx"}], " ", "vy", " "}], 
+             RowBox[{"(", 
+              RowBox[{
+               SuperscriptBox["vx", "2"], "+", 
+               SuperscriptBox["vz", "2"]}], ")"}], 
+             RowBox[{
+              RowBox[{"-", "vy"}], " ", "vz"}]},
+            {
+             RowBox[{
+              RowBox[{"-", "vx"}], " ", "vz", " "}], 
+             RowBox[{
+              RowBox[{"-", "vy"}], " ", "vz"}], 
+             RowBox[{"(", 
+              RowBox[{
+               SuperscriptBox["vx", "2"], " ", "+", 
+               SuperscriptBox["vy", "2"]}], ")"}]}
+           },
+           
+           GridBoxAlignment->{
+            "Columns" -> {{Center}}, "ColumnsIndexed" -> {}, 
+             "Rows" -> {{Baseline}}, "RowsIndexed" -> {}},
+           GridBoxSpacings->{"Columns" -> {
+               Offset[0.27999999999999997`], {
+                Offset[0.5599999999999999]}, 
+               Offset[0.27999999999999997`]}, "ColumnsIndexed" -> {}, "Rows" -> {
+               Offset[0.2], {
+                Offset[0.4]}, 
+               Offset[0.2]}, "RowsIndexed" -> {}}],
+          Column], "\[NoBreak]", ")"}]}]}],
+      Function[BoxForm`e$, 
+       MatrixForm[BoxForm`e$]]], " ", 
+     RowBox[{"(", "\[NoBreak]", GridBox[{
+        {"Mx"},
+        {"My"},
+        {"Mz"}
+       }], "\[NoBreak]", ")"}]}]}], " ", ")"}]],
+  CellChangeTimes->{{3.530086575119871*^9, 3.530086691661537*^9}},
+  FontFamily->"Bell MT"]
+}], "Text",
+ CellChangeTimes->{{3.5300866999890137`*^9, 3.5300871455704994`*^9}, {
+  3.530087177387319*^9, 3.5300872411949687`*^9}, {3.5300872949490433`*^9, 
+  3.530087348413101*^9}}]
+},
+WindowSize->{1440, 878},
+WindowMargins->{{Automatic, -1448}, {Automatic, -185}},
+Magnification->1.6000001430511475`,
+FrontEndVersion->"8.0 for Microsoft Windows (64-bit) (February 23, 2011)",
+StyleDefinitions->"Default.nb"
+]
+(* End of Notebook Content *)
+
+(* Internal cache information *)
+(*CellTagsOutline
+CellTagsIndex->{}
+*)
+(*CellTagsIndex
+CellTagsIndex->{}
+*)
+(*NotebookFileOutline
+Notebook[{
+Cell[557, 20, 6318, 195, 288, "Text"]
+}
+]
+*)
+
+(* End of internal cache information *)
+
