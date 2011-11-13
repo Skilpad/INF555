@@ -10,9 +10,9 @@ public class Drt3 {
  *    Constructors    *
  **********************/
 		
-	public Drt3(Pt2 p, Matrix R, Pt3 t) {
-		Matrix Rinv = R.inverse();
-		this.M = t.apply(Rinv).times(-1);
+	public Drt3(Pt2 p, Position pos) {
+		Matrix Rinv = pos.R.inverse();
+		this.M = pos.t.apply(Rinv).times(-1);
 		this.v = p.toPt3().apply(Rinv).rescaled();
 	}
 
@@ -21,7 +21,9 @@ public class Drt3 {
  *      Converter     *
  **********************/
 
-
+	public String toString() {
+		return "[ M: " + M + " ; v: " + v + " ]"; 
+	}
 	
 	
 /*********************

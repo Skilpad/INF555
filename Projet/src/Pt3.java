@@ -32,7 +32,7 @@ public class Pt3 {
  **********************/
 
 	public Matrix toMatrix() {
-		Matrix M = new Matrix(3,1); M.set(0,0, x); M.set(1,0, x); M.set(2,0, z);
+		Matrix M = new Matrix(3,1); M.set(0,0, x); M.set(1,0, y); M.set(2,0, z);
 		return M;
 	}
 	
@@ -41,7 +41,7 @@ public class Pt3 {
 	}
 	
 	public Pt2 toPt2() {
-		if (z==0) return null;
+		if (z==0) return cutToPt2();   //TODO : change cutToPt2 to null
 		return new Pt2(x/z,y/z);
 	}
 	
@@ -51,6 +51,11 @@ public class Pt3 {
 	
 	public Pt2 toPt2(Matrix R, Pt3 t, Matrix A) {
 		return this.apply(R).plus(t).apply(A).toPt2();
+	}
+	
+	public String toString() {
+		if (this == null) return ("(---,---,---)");
+		return ("("+x+","+y+","+z+")");
 	}
 	
 	

@@ -32,6 +32,10 @@ public class Pt2 {
 		return new Pt3(x,y,1);
 	}
 	
+	public String toString() {
+		return ("("+x+","+y+")");
+	}
+	
 	
 /*********************
  *      Methods      *

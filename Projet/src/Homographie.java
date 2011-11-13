@@ -8,21 +8,27 @@ import Jama.Matrix;
 public class Homographie {
 	
 	public static Matrix find(Stack<?> from, Stack<?> to) {
+		
+		Stack fromC = new Stack() , toC = new Stack();
+		for (Object p : from) { fromC.push(p); }
+		for (Object p : to  ) {   toC.push(p); }
+		
 		int n = from.size();
 		if (n < 4)          {throw new Error("Homographie.find: Not enought point");}
 		if (n != to.size()) {throw new Error("Homographie.find: The 2 args don't have the same number of point");}
 		if ( ! ( (from.peek() instanceof Pt2 && from.peek() instanceof Pt2) || (from.peek() instanceof Pt3 && from.peek() instanceof Pt3) ) )
 							{throw new Error("Homographie.find: The 2 args don't have the same class, among Pt or Vect");}
 		boolean typeIsPt = from.peek() instanceof Pt2;
-		if (typeIsPt) System.out.println("Pt:   " + ((Pt2) from.peek()).x + " " + ((Pt2) from.peek()).y);
-				 else System.out.println("Vect: " + ((Pt3) from.peek()).x + " " + ((Pt3) from.peek()).y + " " + ((Pt3) from.peek()).z);
 		// On definit la matrice A et Q
 		double[][] A_array = new double[2*n][8];
 		double[][] Q_array = new double[2*n][1];
 		int i = 0;
-		while (!from.isEmpty()) {
-			Pt2 p = (typeIsPt) ? (Pt2) from.pop() : new Pt2((Pt3) from.pop());
-			Pt2 q = (typeIsPt) ? (Pt2)   to.pop() : new Pt2((Pt3)   to.pop());
+		while (!fromC.isEmpty()) {
+			Pt2 p = (typeIsPt) ? (Pt2) fromC.pop() : new Pt2((Pt3) fromC.pop());
+			Pt2 q = (typeIsPt) ? (Pt2)   toC.pop() : new Pt2((Pt3)   toC.pop());
+//		while (!from.isEmpty()) {
+//			Pt2 p = (typeIsPt) ? (Pt2) from.pop() : new Pt2((Pt3) from.pop());
+//			Pt2 q = (typeIsPt) ? (Pt2)   to.pop() : new Pt2((Pt3)   to.pop());
 			double[] l1 = {p.x, p.y, 1,   0,   0, 0, -p.x*q.x, -p.y*q.x};
 			double[] l2 = {  0,   0, 0, p.x, p.y, 1, -p.x*q.y, -p.y*q.y};
 			A_array[i  ] = l1;

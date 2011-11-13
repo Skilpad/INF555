@@ -1,12 +1,13 @@
 
 import java.awt.Point;
+import java.util.Stack;
 
 import javax.media.opengl.*;
 import javax.swing.JFileChooser;
 
 import Jama.Matrix;
 
-//import processing.opengl.*;
+import processing.opengl.*;
 import processing.core.*;
 
 
@@ -14,8 +15,7 @@ public class Interface extends PApplet {
 
 	Plan pa, pb, pc;
 	
-	Matrix R;
-	Pt3 t;
+	Position view;
 	
 	Matrix A, dist_coeffs;
 	
@@ -24,34 +24,90 @@ public class Interface extends PApplet {
 	Matrix left;
 	Matrix right;
 
-	Point windowDim = new Point(640,480);
+	Point windowDim = new Point(1024,768);
+
+//	PGraphicsOpenGL pgl;
+//	GL gl;
+	
+	//** For test
+		Plan pA, pB, pC;
+	
 	
 	public void setup() {
 
 		/** Constants & Variables initialization **/
+		// Movements
 		double da = 0.1;
 		left = new Matrix(3,3); right = new Matrix(3,3);
 		left.set(0,0,  Math.cos(da)); left.set(1,1, Math.cos(da)); left.set(2,2, 1); 
 		left.set(0,1, -Math.sin(da)); left.set(1,0, Math.sin(da));
 		right.set(0,0, Math.cos(da)); right.set(1,1,  Math.cos(da)); right.set(2,2, 1); 
 		right.set(0,1,-Math.sin(da)); right.set(1,0, -Math.sin(da));
-		R = new Matrix(3,3); R.set(2,0, 1); R.set(1,1, 1); R.set(0,2, -1);
-		t = new Pt3(-10,0, 10);
-		
-		/** ... **/
+		Matrix R = new Matrix(3,3); R.set(2,0, 1); R.set(1,1, 1); R.set(0,2, -1);
+		Pt3 t = new Pt3(-10,0, 10);
+		view = new Position(R,t);
+		// Camera calibration
 		A = new Matrix(3,3);
 		A.set(0,0, 750); A.set(1,1, 750); A.set(0,2, windowDim.x/2); A.set(1,2, windowDim.y/2);
 		
+		/** Test **/
+		// Points de référence
+		Stack<Pt3> planApts = new Stack<Pt3>();
+		planApts.push(new Pt3(0,0,-297)); planApts.push(new Pt3(210,0,-297)); planApts.push(new Pt3(210,0,0)); planApts.push(new Pt3(0,0,0));
+		
+		// Localisation des autres points
+		Pt3eval p11 = new Pt3eval(), p12 = new Pt3eval(), p13 = new Pt3eval(), p14 = new Pt3eval(), 
+				p21 = new Pt3eval(), p22 = new Pt3eval(), p23 = new Pt3eval(), p24 = new Pt3eval();
+		Stack<Pt2> locA = new Stack<Pt2>();
+		locA.push(new Pt2(419,172)); locA.push(new Pt2(633,217)); locA.push(new Pt2(618,456)); locA.push(new Pt2(436,409)); 
+		Position POS = new Position(locA, planApts, A, null);
+		p11.add(new Pt2( 51,225), POS); p12.add(new Pt2(247,188), POS); p13.add(new Pt2(288,395), POS); p14.add(new Pt2(121,429),POS); 
+		p21.add(new Pt2(826,277), POS); p22.add(new Pt2(949,423), POS); p23.add(new Pt2(782,499), POS); p24.add(new Pt2(874,643),POS); 
+		locA = new Stack<Pt2>();
+		locA.push(new Pt2(404,217)); locA.push(new Pt2(628,178)); locA.push(new Pt2(607,397)); locA.push(new Pt2(421,435)); 
+		POS = new Position(locA, planApts, A, null);
+		p11.add(new Pt2( 52,435), POS); p12.add(new Pt2(228,302), POS); p13.add(new Pt2(272,495), POS); p14.add(new Pt2(134,617),POS); 
+		p21.add(new Pt2(801,169), POS); p22.add(new Pt2(985,249), POS); p23.add(new Pt2(904,444), POS); p24.add(new Pt2(754,368),POS);
+		// Création des plans
+		pA = new Plan(planApts, loadImage("bookcovers2.png"), locA);
+		planApts = new Stack<Pt3>(); locA = new Stack<Pt2>();
+		planApts.push(p11.p); planApts.push(p12.p); planApts.push(p13.p); planApts.push(p14.p);
+		locA.push(new Pt2( 51,225)); locA.push(new Pt2(247,188)); locA.push(new Pt2(288,395)); locA.push(new Pt2(121,429));
+		pB = new Plan(planApts, loadImage("bookcovers1.png"), locA);
+		planApts = new Stack<Pt3>(); locA = new Stack<Pt2>();
+		planApts.push(p21.p); planApts.push(p22.p); planApts.push(p23.p); planApts.push(p24.p);
+		locA.push(new Pt2(801,169)); locA.push(new Pt2(985,249)); locA.push(new Pt2(904,444)); locA.push(new Pt2(754,368));
+		pC = new Plan(planApts, loadImage("bookcovers2.png"), locA);
+		
+		System.out.println("pA >>>>  "+pA.corners3d);
+		System.out.println("pB >>>>  "+pB.corners3d);
+		System.out.println("pC >>>>  "+pC.corners3d);
+
+		/** Window **/
+		size(1024,768);
 	}
 	
 	public void keyPressed() {
 		switch (keyCode) {
-			case UP   : t.add(  up.apply(R)); break;
-			case DOWN : t.add(down.apply(R)); break;
+			case UP   : view.moveForward(1);  break;
+			case DOWN : view.moveForward(-1); break;
 			case LEFT : break;
 			case RIGHT: break;
 		}
 	}
+	
+	
+	public void draw() {
+		System.out.println("\nXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX");
+		view.R.print(5,5);
+		System.out.println(view.t);
+		fill(color(0xFF000000));
+		image(pA.toPlot(view, A, windowDim),0,0);
+		image(pB.toPlot(view, A, windowDim),0,0);
+		image(pC.toPlot(view, A, windowDim),0,0);
+	}
+
+	
 	
 	
 //	int nbRep       = 5;
