@@ -36,12 +36,14 @@ public class Position {
 		// Correct distortion
 		Stack<Pt2> im  = new Stack<Pt2>();
 		for (Pt2 p : pts2D) {
-			double r2 = p.x*p.x + p.y*p.y;
-			double k = 1 + k1*r2 + k2*r2*r2 + k3*r2*r2*r2;
-			double x = p.x * k + 2*p1*p.x*p.y + p2*(r2+2*p.x*p.x);
-			double y = p.y * k + 2*p2*p.x*p.y + p1*(r2+2*p.y*p.y);
-			im.push(new Pt2(fx*x+cx,fy*y+cy));
-			System.out.println("Converted "+p+" to "+im.peek());
+			if (dist_coeffs == null) im.push(new Pt2(fx*p.x+cx,fy*p.x+cy));
+			else {
+				double r2 = p.x*p.x + p.y*p.y;
+				double k = 1 + k1*r2 + k2*r2*r2 + k3*r2*r2*r2;
+				double x = p.x * k + 2*p1*p.x*p.y + p2*(r2+2*p.x*p.x);
+				double y = p.y * k + 2*p2*p.x*p.y + p1*(r2+2*p.y*p.y);
+				im.push(new Pt2(fx*x+cx,fy*y+cy));
+			}
 		}
 		// Calcul du centre de gravité
 		Pt3 mc = new Pt3();
@@ -61,20 +63,17 @@ public class Position {
 			mm[2][2] += (p.z - mc.z)*(p.z - mc.z);
 		}
 		mm[1][0] = mm[0][1]; mm[2][0] = mm[0][2]; mm[2][1] = mm[1][2]; 
-		(new Matrix(mm)).print(5,5);
 		SingularValueDecomposition svd = (new Matrix(mm)).svd();
 		// initialize extrinsic parameters
 		if (true) { // planar case
 			R = svd.getV();
 			if ( R.get(0,0)*R.get(0,0)+R.get(1,1)*R.get(1,1) < 0.000000001 ) R = Matrix.identity(3,3);
-			if ( R.det() < 0 ) R.times(-1);
+			if ( R.det() < 0 ) R = R.times(-1);
 			t = mc.apply(R).times(-1);
-			R.print(5, 5); System.out.println("t: "+t);
 			
 			Stack<Pt2> objXY = new Stack<Pt2>();
 			for (Pt3 p : pts3D) {
 				objXY.push(p.apply(R).plus(t).cutToPt2());
-				System.out.println("Rotatated "+p+" to "+p.apply(R).plus(t).cutToPt2());
 			}
 			Matrix H = Homographie.find(objXY, im);
 			

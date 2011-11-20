@@ -60,8 +60,8 @@ public class Tests {
 		pr("3D points: " + pts); 
 		pr("Seen:      " + seen);
 		pr("");
-		pr("Actual pos:"); pos0.R.print(5,5); pr(t); pr("");
-		pr("Calc.  pos:"); pos1.R.print(5,5); pr(t); pr("");
+		pr("Actual pos:"); pos0.R.print(5,5); pr(pos0.t); pr("");
+		pr("Calc.  pos:"); pos1.R.print(5,5); pr(pos1.t); pr("");
 		
 	}
 	
