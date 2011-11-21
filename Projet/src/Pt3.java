@@ -1,3 +1,5 @@
+import java.util.Stack;
+
 import Jama.Matrix;
 
 
@@ -57,7 +59,7 @@ public class Pt3 {
 		if (this == null) return ("(---,---,---)");
 		return ("("+x+","+y+","+z+")");
 	}
-	
+		
 	
 /*********************
  *      Methods      *

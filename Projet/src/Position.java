@@ -36,13 +36,13 @@ public class Position {
 		// Correct distortion
 		Stack<Pt2> im  = new Stack<Pt2>();
 		for (Pt2 p : pts2D) {
-			if (dist_coeffs == null) im.push(new Pt2(fx*p.x+cx,fy*p.x+cy));
+			if (dist_coeffs == null) im.push(new Pt2((p.x-cx)/fx,(p.y-cy)/fy));
 			else {
 				double r2 = p.x*p.x + p.y*p.y;
 				double k = 1 + k1*r2 + k2*r2*r2 + k3*r2*r2*r2;
 				double x = p.x * k + 2*p1*p.x*p.y + p2*(r2+2*p.x*p.x);
 				double y = p.y * k + 2*p2*p.x*p.y + p1*(r2+2*p.y*p.y);
-				im.push(new Pt2(fx*x+cx,fy*y+cy));
+				im.push(new Pt2((x-cx)/fx,(y-cy)/fy));
 			}
 		}
 		// Calcul du centre de gravité
@@ -65,18 +65,27 @@ public class Position {
 		mm[1][0] = mm[0][1]; mm[2][0] = mm[0][2]; mm[2][1] = mm[1][2]; 
 		SingularValueDecomposition svd = (new Matrix(mm)).svd();
 		// initialize extrinsic parameters
+
+System.out.println("\n***********************************************\n");
+		
 		if (true) { // planar case
 			R = svd.getV();
+System.out.println("\nR t -------------------------------");
+R.print(10,3);
 			if ( R.get(0,0)*R.get(0,0)+R.get(1,1)*R.get(1,1) < 0.000000001 ) R = Matrix.identity(3,3);
 			if ( R.det() < 0 ) R = R.times(-1);
 			t = mc.apply(R).times(-1);
+System.out.println(t);
 			
 			Stack<Pt2> objXY = new Stack<Pt2>();
 			for (Pt3 p : pts3D) {
 				objXY.push(p.apply(R).plus(t).cutToPt2());
 			}
 			Matrix H = Homographie.find(objXY, im);
-			
+
+System.out.println("\n\nH ---------------------------------");
+H.print(10,3);
+
 			Pt3 h1 = new Pt3(H.get(0,0), H.get(1,0), H.get(2,0));
 			Pt3 h2 = new Pt3(H.get(0,1), H.get(1,1), H.get(2,1));
 			Pt3 tt = new Pt3(H.get(0,2), H.get(1,2), H.get(2,2));
@@ -84,12 +93,25 @@ public class Position {
 			h1.rescale(1/n1); h2.rescale(1/n2); tt.rescale(2/(n1+n2));
 			Pt3 h3 = h1.cross(h2);
 			
+			H.set(0,0, h1.x); H.set(0,1, h2.x); H.set(0,2, h3.x);
+			H.set(1,0, h1.y); H.set(1,1, h2.y); H.set(1,2, h3.y);
+			H.set(2,0, h1.z); H.set(2,1, h2.z); H.set(2,2, h3.z);
+			
+System.out.println("H ---------------------------------");
+H.print(10,3);
+
 			H = rodrigues(rodrigues(H));
-			t = t.apply(R).plus(tt);
+System.out.println("H ---------------------------------");
+H.print(10,3);
+
+			t = t.apply(H).plus(tt);
 			R = H.times(R);
 			
 		} else {    // non planar case
 		}
+
+System.out.println("\n***********************************************\n");	
+	
 	}
 
 

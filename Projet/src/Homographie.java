@@ -9,6 +9,12 @@ public class Homographie {
 	
 	public static Matrix find(Stack<?> from, Stack<?> to) {
 		
+		System.out.println("Homographie:");
+		System.out.println("From:");
+		System.out.println("   "+from);
+		System.out.println("To:");
+		System.out.println("   "+to);
+		
 		Stack fromC = new Stack() , toC = new Stack();
 		for (Object p : from) { fromC.push(p); }
 		for (Object p : to  ) {   toC.push(p); }
