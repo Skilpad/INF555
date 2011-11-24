@@ -7,30 +7,7 @@ import Jama.Matrix;
 public class Tests {
 
 	private static void pr(Object s) { System.out.println(s); }
-	
-	private static void rot() {
-		
-		Point windowDim = new Point(1024,768);
-		Matrix A = new Matrix(3,3);
-		A.set(0,0, 750); A.set(1,1, 750); A.set(0,2, windowDim.x/2); A.set(1,2, windowDim.y/2);
 
-		Stack<Pt3> pts = new Stack<Pt3>();
-		pts.push(new Pt3(0,0,0));
-		pts.push(new Pt3(1,0,0));
-		pts.push(new Pt3(1,1,0));
-		pts.push(new Pt3(0,1,0));
-		
-		Matrix R = Matrix.identity(3,3);
-		Pt3    t = new Pt3(0,0,-1);
-		Position pos0 = new Position(R, t);
-				
-		Stack<Pt2> seen = new Stack<Pt2>();
-		for (Pt3 p : pts) { seen.push(p.apply(pos0.R).plus(pos0.t).apply(A).toPt2()); }
-		
-		pr("3D points: " + pts); 
-		pr("Seen:      " + seen);
-		
-	}
 	
 	private static void pnp() {
 		

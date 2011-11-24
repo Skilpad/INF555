@@ -5,14 +5,17 @@ import Jama.Matrix;
 
 public class Pt3eval {
 
-	public Pt3         p;
+	public Pt3     p;
+	public double  fiability;
 
 	private Stack<Drt3> drt;
 	private Matrix A;
 	private Pt3 Ms;
 	
 	public Pt3eval() {
-		this.p = null; this.drt = new Stack<Drt3>();
+		this.p = null; 
+		this.drt = new Stack<Drt3>();
+		this.fiability = 0;
 		this.A = new Matrix(3,3); this.Ms = new Pt3();
 	}
 	
