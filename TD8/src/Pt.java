@@ -30,9 +30,17 @@ public class Pt {
 	public Pt plus(Pt p) {
 		return new Pt(x+p.x, y+p.y);
 	}
-	
+
+	public Pt minus(Pt p) {
+		return new Pt(x-p.x, y-p.y);
+	}
+
 	public Pt times(double t) {
 		return new Pt(t*x,t*y);
+	}
+	
+	public double scal(Pt p) {
+		return x*p.x + y*p.y;
 	}
 	
 	public String toString() {
@@ -42,4 +50,5 @@ public class Pt {
 	public boolean equals(Pt p) {
 		return x == p.x && y == p.y;
 	}
+	
 }
