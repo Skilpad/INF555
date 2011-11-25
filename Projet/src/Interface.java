@@ -102,6 +102,12 @@ public class Interface extends PApplet {
 		plot(new Pt3(-1,-1,-1));
 		fill(color(0xFFFF0000)); stroke(color(0xFFFF0000));
 		plot(new Pt3( 1, 1, 1));
+		
+		plot(new Pt3(-1,-1,-1), new Pt3( 1, 1, 1));
+		plot(new Pt3(-1,-1, 1), new Pt3( 1, 1,-1));
+		plot(new Pt3( 1,-1,-1), new Pt3(-1, 1, 1));
+		plot(new Pt3(-1, 1,-1), new Pt3( 1,-1, 1));
+		
 //		view.R.print(5,5);
 //		System.out.println(view.t);
 		
@@ -159,6 +165,16 @@ public class Interface extends PApplet {
 		plot(p.toPt2Im(view, A));
 	}
 	
+	public void plot(Pt2 a, Pt2 b) {
+		if (a == null || b == null) return;
+		line((float) a.x,(float) a.y, (float) b.x, (float) b.y);
+	}
+	
+	public void plot(Pt3 a, Pt3 b) {
+		if (a == null || b == null) return;
+		plot(a.toPt2Im(view, A), b.toPt2Im(view, A));
+	}
+	
 	public void plot(Drt3 d) {
 //		Pt3 tcM = d.M.plus(p)
 //		if ()
@@ -168,9 +184,9 @@ public class Interface extends PApplet {
 		double Au = N.x; double Bu = M.x - M.z * N.x;         //    u = Au + Bu X
 		double Av = N.y; double Bv = M.y - M.z * N.y;         //    v = Av + Bv X    (X in R)
 		if (Math.abs(Bu) > Math.abs(Bv)) {     // More horizontal then vertical
-			line(0, (float) (Av-Bv*Au/Bu), windowDim.x, (float) (Av+Bv*(windowDim.x-Au)/Bu));
+			line(0, (float) (Av-Bv*Au/Bu), this.getWidth(), (float) (Av+Bv*(this.getWidth()-Au)/Bu));
 		} else {
-			line((float) (Au-Bu*Av/Bv), 0, (float) (Au+Bu*(windowDim.y-Av)/Bv), windowDim.y); 
+			line((float) (Au-Bu*Av/Bv), 0, (float) (Au+Bu*(this.getHeight()-Av)/Bv), this.getHeight()); 
 		}
 	}
 	
