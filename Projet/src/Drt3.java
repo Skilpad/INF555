@@ -10,6 +10,10 @@ public class Drt3 {
  *    Constructors    *
  **********************/
 		
+	public Drt3(Pt3 M, Pt3 v) {
+		this.M = M; this.v = v;
+	}
+	
 	public Drt3(Pt2 p, Position pos) {
 		Matrix Rinv = pos.R.inverse();
 		this.M = pos.t.apply(Rinv).times(-1);

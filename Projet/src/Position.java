@@ -8,6 +8,7 @@ public class Position {
 
 	public Matrix R;
 	public Pt3 t;
+	public double aX, aY;
 	
 	
 	
@@ -16,7 +17,7 @@ public class Position {
  **********************/	
 	
 	public Position(Matrix R, Pt3 t) {
-		this.R = R; this.t = t;
+		this.R = R; this.t = t; this.aX = 0; this.aY = 0;
 	}
 	
 	public Position(Stack<Pt2> pts2D, Stack<Pt3> pts3D, Matrix A, Matrix dist_coeffs) {    // Built solving PnP. DistCoeff = {{k1,k2,k3,p1,p2}} || {{k1,k2,p1,p2}} || {{k1,k2,k3,p1,p2}}^T || {{k1,k2,p1,p2}}^T || null.
@@ -120,8 +121,23 @@ System.out.println("\n***********************************************\n");
  *********************/
 	
 	public void moveForward(double dist) {
-		t.add((new Pt3(0,0, dist)).apply(R));
+		t.add(new Pt3(0,0, -dist));
 	}
+	
+	public void rotate(double daX, double daY) {
+		aX -= daX; aY += daY;
+		double c, s;
+		Matrix rX = Matrix.identity(3,3);
+		c = Math.cos(aX); s = Math.sin(aX);
+		rX.set(1,1, c); rX.set(2,2, c); rX.set(2,1, s); rX.set(1,2, -s);
+		Matrix rY = Matrix.identity(3,3);
+		c = Math.cos(aY); s = Math.sin(aY);
+		rY.set(0,0, c); rY.set(2,2, c); rY.set(0,2, s); rY.set(2,0, -s);
+		t = t.apply(R.inverse());
+		R = rY.times(rX).inverse();
+		t = t.apply(R);
+	}
+
 		
 	
 	

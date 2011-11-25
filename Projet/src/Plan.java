@@ -23,7 +23,7 @@ public class Plan {
 	
 	public PImage toPlot(Position pos, Matrix A, Point dstDimensions) {
 		Stack <Pt2> resCorners = new Stack<Pt2>();
-		for (Pt3 c : corners3d) resCorners.add(c.toPt2(pos.R, pos.t, A));
+		for (Pt3 c : corners3d) resCorners.add(c.toPt2(pos, A));
 		return Homographie.invert(Homographie.find(resCorners, corners2d), img, dstDimensions);
 	}
 	

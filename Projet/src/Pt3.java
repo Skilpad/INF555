@@ -43,16 +43,28 @@ public class Pt3 {
 	}
 	
 	public Pt2 toPt2() {
-		if (z==0) return cutToPt2();   //TODO : change cutToPt2 to null
+		if (z==0) return null;
 		return new Pt2(x/z,y/z);
 	}
 	
-	public Pt2 toPt2(Matrix R, Pt3 t) {
-		return this.apply(R).plus(t).toPt2();
+	public Pt2 toPt2(Position pos) {
+		return this.apply(pos.R).plus(pos.t).toPt2();
 	}
 	
-	public Pt2 toPt2(Matrix R, Pt3 t, Matrix A) {
-		return this.apply(R).plus(t).apply(A).toPt2();
+	public Pt2 toPt2(Position pos, Matrix A) {
+		return this.apply(pos.R).plus(pos.t).apply(A).toPt2();
+	}
+	
+	public Pt2 toPt2Im() {
+		if (z > 0) return toPt2(); else return null;
+	}
+	
+	public Pt2 toPt2Im(Position pos) {
+		return this.apply(pos.R).plus(pos.t).toPt2Im();
+	}
+	
+	public Pt2 toPt2Im(Position pos, Matrix A) {
+		return this.apply(pos.R).plus(pos.t).apply(A).toPt2Im();
 	}
 	
 	public String toString() {
