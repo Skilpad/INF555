@@ -23,9 +23,11 @@ public class Interface extends PApplet {
 	Point windowDim = new Point(1024,768);
 	
 	
+	static boolean WITH_PTS = true, NO_PTS = false;
+	
 	// Movement
 	double da = 0.1;
-	double dt = 1;
+	double dt = 10;
 	int mouse_x_;
 	int mouse_y_;
 
@@ -46,7 +48,7 @@ public class Interface extends PApplet {
 //		/** Test **/
 //		// Points de référence
 //		Stack<Pt3> planApts = new Stack<Pt3>();
-//		planApts.push(new Pt3(0,0,-297)); planApts.push(new Pt3(210,0,-297)); planApts.push(new Pt3(210,0,0)); planApts.push(new Pt3(0,0,0));
+//		planApts.push(new Pt3(0,297,0)); planApts.push(new Pt3(210,297,0)); planApts.push(new Pt3(210,0,0)); planApts.push(new Pt3(0,0,0));
 //		
 //		// Localisation des autres points
 //		Pt3eval p11 = new Pt3eval(), p12 = new Pt3eval(), p13 = new Pt3eval(), p14 = new Pt3eval(), 
@@ -78,10 +80,13 @@ public class Interface extends PApplet {
 
 		/** Window **/
 		size(1024,768);
+		plot();
 	}
 	
 	
-	public void draw() {
+	public void draw() {}
+	
+	public void plot() {
 		background(0xFFFFFFFF);
 		fill(color(0xFF0000FF)); stroke(color(0xFF0000FF));
 		plot(new Drt3(new Pt3(0,0,0), new Pt3(1,0,0)));
@@ -107,17 +112,19 @@ public class Interface extends PApplet {
 		plot(new Pt3(-1,-1, 1), new Pt3( 1, 1,-1));
 		plot(new Pt3( 1,-1,-1), new Pt3(-1, 1, 1));
 		plot(new Pt3(-1, 1,-1), new Pt3( 1,-1, 1));
-		
-//		view.R.print(5,5);
-//		System.out.println(view.t);
-		
-//		System.out.println("\nXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX");
-//		view.R.print(5,5);
-//		System.out.println(view.t);
-//		fill(color(0xFF000000));
+
 //		image(pA.toPlot(view, A, windowDim),0,0);
 //		image(pB.toPlot(view, A, windowDim),0,0);
 //		image(pC.toPlot(view, A, windowDim),0,0);
+		
+//		fill(color(0xFFFF0000)); stroke(color(0xFFFF0000));
+//		plot(pA.corners3d);
+//		fill(color(0xFF00FF00)); stroke(color(0xFF00FF00));
+//		plot(pB.corners3d);
+//		fill(color(0xFF0000FF)); stroke(color(0xFF0000FF));
+//		plot(pC.corners3d);
+//		
+//		print("Plotted\n");
 	}
 
 	
@@ -134,12 +141,14 @@ public class Interface extends PApplet {
 			case 'z' : view.moveForward( dt); break;
 			case 's' : view.moveForward(-dt); break;
 		}
+		plot();
 	}
 
 	public void mouseDragged() {
 //		rotate( (double) (mouseX - mouse_x_)/30, (double) (mouseY - mouse_y_)/30 );
 		view.rotate( (double) (mouseY - mouse_y_)*da/30 ,  (double) (mouseX - mouse_x_)*da/30 );
 		mouseMoved();
+		plot();
 	}
 	
 	public void mouseMoved() {
@@ -165,6 +174,20 @@ public class Interface extends PApplet {
 		plot(p.toPt2Im(view, A));
 	}
 	
+	public void plot(Stack<Pt3> P) {
+		plot(P, WITH_PTS);
+	}
+	
+	public void plot(Stack<Pt3> P, boolean pts) {
+		Pt3 p_last = null;
+		for (Pt3 p : P) {
+			if (pts) plot(p);
+			if (p_last != null) plot(p_last, p);
+			p_last = p;
+		}
+		plot(p_last, P.peek());
+	}
+	
 	public void plot(Pt2 a, Pt2 b) {
 		if (a == null || b == null) return;
 		line((float) a.x,(float) a.y, (float) b.x, (float) b.y);
@@ -176,17 +199,25 @@ public class Interface extends PApplet {
 	}
 	
 	public void plot(Drt3 d) {
-//		Pt3 tcM = d.M.plus(p)
-//		if ()
-		Pt3 M = d.M.apply(view.R).plus(view.t).apply(A);      //    M = A ( R d.M + t )
-		Pt2 N = d.v.apply(view.R).apply(A).toPt2();           //    N = normalize( A R d.v )
-		if (N == null) return;
-		double Au = N.x; double Bu = M.x - M.z * N.x;         //    u = Au + Bu X
-		double Av = N.y; double Bv = M.y - M.z * N.y;         //    v = Av + Bv X    (X in R)
-		if (Math.abs(Bu) > Math.abs(Bv)) {     // More horizontal then vertical
-			line(0, (float) (Av-Bv*Au/Bu), this.getWidth(), (float) (Av+Bv*(this.getWidth()-Au)/Bu));
+		Pt3 M = d.M.apply(view.R).plus(view.t).apply(A);     //    M = A ( R d.M + t )
+		Pt3 N = d.v.apply(view.R).apply(A);
+		double Au, Bu, Av, Bv;
+		if (N.z == 0) {
+			if (M.z <= 0) return;
+			Au = M.x/M.z; Bu = N.x;         		//    u = Au + Bu X
+			Av = M.y/M.z; Bv = N.y;         		//    v = Av + Bv X    (X in R)
 		} else {
-			line((float) (Au-Bu*Av/Bv), 0, (float) (Au+Bu*(this.getHeight()-Av)/Bv), this.getHeight()); 
+			Au = N.x/N.z; Bu = (M.x - M.z * Au);         //    u = Au + Bu X
+			Av = N.y/N.z; Bv = (M.y - M.z * Av);         //    v = Av + Bv X    (X in R)
+		}
+		double tmin = Math.max(0, Math.max( ( ((Bu>0)?0:getWidth()) - Au ) / Bu ,  ( ((Bv>0)?0:getHeight()) - Av ) / Bv ));
+		double tmax = Math.max(0, Math.min( ( ((Bu>0)?getWidth():0) - Au ) / Bu ,  ( ((Bv>0)?getHeight():0) - Av ) / Bv ));
+		double dt   = (tmax - tmin)/10; 
+		if (dt < 0.0001) { line((float) (Au+Bu*tmin), (float) (Av+Bv*tmin), (float) (Au+Bu*(tmax)), (float) (Av+Bv*(tmax))); return; }
+		tmax += dt/2;
+		print(dt+"\n");
+		for (double t = tmin; t < tmax; t += dt) {
+			line((float) (Au+Bu*t), (float) (Av+Bv*t), (float) (Au+Bu*(t+dt)), (float) (Av+Bv*(t+dt)));
 		}
 	}
 	

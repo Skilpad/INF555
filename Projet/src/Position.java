@@ -126,6 +126,8 @@ System.out.println("\n***********************************************\n");
 	
 	public void rotate(double daX, double daY) {
 		aX -= daX; aY += daY;
+		if (aX > Math.PI/2) aX  = Math.PI/2; else if (aX < -Math.PI/2) aX = -Math.PI/2;
+		if (aY > Math.PI)   aY -= Math.PI*2; else if (aY < -Math.PI)   aY += Math.PI*2;
 		double c, s;
 		Matrix rX = Matrix.identity(3,3);
 		c = Math.cos(aX); s = Math.sin(aX);
