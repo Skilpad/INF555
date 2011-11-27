@@ -34,6 +34,7 @@ public class Position {
 			if (dist_coeffs.getRowDimension() == 4) { k3 = 0; p1 = dist_coeffs.get(0,2); p2 = dist_coeffs.get(0,3); }
 			else { k3 = dist_coeffs.get(0,2); p1 = dist_coeffs.get(0,3); p2 = dist_coeffs.get(0,4); }
 		}
+		
 		// Correct distortion
 		Stack<Pt2> im  = new Stack<Pt2>();
 		for (Pt2 p : pts2D) {
@@ -67,16 +68,16 @@ public class Position {
 		SingularValueDecomposition svd = (new Matrix(mm)).svd();
 		// initialize extrinsic parameters
 
-System.out.println("\n***********************************************\n");
+//System.out.println("\n***********************************************\n");
 		
 		if (true) { // planar case
 			R = svd.getV();
-System.out.println("\nR t -------------------------------");
-R.print(10,3);
+//System.out.println("\nR t -------------------------------");
+//R.print(10,3);
 			if ( R.get(0,0)*R.get(0,0)+R.get(1,1)*R.get(1,1) < 0.000000001 ) R = Matrix.identity(3,3);
 			if ( R.det() < 0 ) R = R.times(-1);
 			t = mc.apply(R).times(-1);
-System.out.println(t);
+//System.out.println(t);
 			
 			Stack<Pt2> objXY = new Stack<Pt2>();
 			for (Pt3 p : pts3D) {
@@ -84,8 +85,8 @@ System.out.println(t);
 			}
 			Matrix H = Homographie.find(objXY, im);
 
-System.out.println("\n\nH ---------------------------------");
-H.print(10,3);
+//System.out.println("\n\nH ---------------------------------");
+//H.print(10,3);
 
 			Pt3 h1 = new Pt3(H.get(0,0), H.get(1,0), H.get(2,0));
 			Pt3 h2 = new Pt3(H.get(0,1), H.get(1,1), H.get(2,1));
@@ -98,12 +99,12 @@ H.print(10,3);
 			H.set(1,0, h1.y); H.set(1,1, h2.y); H.set(1,2, h3.y);
 			H.set(2,0, h1.z); H.set(2,1, h2.z); H.set(2,2, h3.z);
 			
-System.out.println("H ---------------------------------");
-H.print(10,3);
+//System.out.println("H ---------------------------------");
+//H.print(10,3);
 
 			H = rodrigues(rodrigues(H));
-System.out.println("H ---------------------------------");
-H.print(10,3);
+//System.out.println("H ---------------------------------");
+//H.print(10,3);
 
 			t = t.apply(H).plus(tt);
 			R = H.times(R);
@@ -111,7 +112,7 @@ H.print(10,3);
 		} else {    // non planar case
 		}
 
-System.out.println("\n***********************************************\n");	
+//System.out.println("\n***********************************************\n");	
 	
 	}
 
@@ -122,6 +123,10 @@ System.out.println("\n***********************************************\n");
 	
 	public void moveForward(double dist) {
 		t.add(new Pt3(0,0, -dist));
+	}
+	
+	public void moveRight(double dist) {
+		t.add(new Pt3(-dist,0,0));
 	}
 	
 	public void rotate(double daX, double daY) {
