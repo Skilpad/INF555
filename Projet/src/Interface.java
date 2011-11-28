@@ -16,7 +16,7 @@ public class Interface extends PApplet {
 
 	Plan pa, pb, pc;
 	
-	Position view = new Position(Matrix.identity(3,3), new Pt3(2,2, 10));
+	Position view = new Position(Matrix.identity(3,3), new Pt3(2,2, 100));
 	
 	Matrix A, dist_coeffs;
 	
@@ -105,10 +105,10 @@ public class Interface extends PApplet {
 		seen.push(    new Pt3(2,3,0).toPt2Im(view, A));
 		println(seen);
 		
-//		seen = new Stack<Pt2>();
-//		for (Pt3 p : planApts)  seen.push(p.apply(view.R).plus(view.t).apply(A).toPt2());
-//		println(seen);
-//		
+		seen = new Stack<Pt2>();
+		for (Pt3 p : planApts)  seen.push(p.apply(view.R).plus(view.t).apply(A).toPt2());
+		println(seen);
+		
 //		Stack<Pt2> seen_ = new Stack<Pt2>();
 //		while (!seen.isEmpty()) seen_.push(seen.pop());
 //		seen = seen_;
