@@ -160,41 +160,32 @@ public class Position {
 			Matrix epsList = new Matrix(nPts,1);
 			double s1 = 0, s2 = 0;
 			d2 = Double.POSITIVE_INFINITY;
-			
-			int nbIt = 0;
-			
 			while (d2 > threshold2) {
-				
-				nbIt++;
-				
 				Matrix xList = new Matrix(nPts, 1) , yList = new Matrix(nPts, 1);
 				int i = 0; for (Pt2 p : im) { System.out.println(p+" <=> ("+(MList.get(i,0)+M3.x)+","+(MList.get(i,1)+M3.y)+","+(MList.get(i,2)+M3.z)+")");  xList.set(i,0, p.x*(1+epsList.get(i,0))-M2.x ); i++; }
 					i = 0; for (Pt2 p : im) { yList.set(i,0, p.y*(1+epsList.get(i,0))-M2.y ); i++; }
 				I = S.times(xList); J = S.times(yList);
+				s1 = I.norm2(); s2 = J.norm2(); 
+				I = I.times(1/s1); J = J.times(1/s2);
 				K.set(0,0, I.get(1,0)*J.get(2,0) - I.get(2,0)*J.get(1,0)); 
 				K.set(1,0, I.get(2,0)*J.get(0,0) - I.get(0,0)*J.get(2,0)); 
 				K.set(2,0, I.get(0,0)*J.get(1,0) - I.get(1,0)*J.get(0,0));		// K <- I^J = s1 s2 k = (s1 s2 / s) s k , s = (s1+s2)/2
-				s1 = I.norm2(); s2 = J.norm2(); K.times((s1+s2)/(2*s1*s2));		// K <- K * ( s / (s1 s2)) = K * ( (s1+s2) / (2 s1 s2) )
-				
-				System.out.println("\ns1:  " + s1 + "\ns2:  "+s2+"\n");
-				
-				Matrix epsList_ = MList.times(K);			//  after one iteration: Z0 = f/s, and thus 1/Z0 = s/f = s. So: (M3Mi.k)/Z0 = M3Mi.(sk) = M3Mi.K
+				Matrix epsList_ = MList.times(K).times((s1+s2)/2);			//  after one iteration: Z0 = f/s, and thus 1/Z0 = s/f = s. So: (M3Mi.k)/Z0 = s M3Mi.k
 				d2 = epsList_.minus(epsList).norm2();
 				epsList = epsList_;
 			}
-			System.out.println("Iterations:   "+nbIt+"\n");
-			
-			I = I.times(1/s1); J = J.times(1/s2); K = K.times(1/K.norm2());
-			Z0 = 2/(s1+s2);
 		}
 		
 		R = new Matrix(3,3);
 		R.set(0,0, I.get(0,0)); R.set(0,1, I.get(1,0)); R.set(0,2, I.get(2,0));
 		R.set(1,0, J.get(0,0)); R.set(1,1, J.get(1,0)); R.set(1,2, J.get(2,0));
 		R.set(2,0, K.get(0,0)); R.set(2,1, K.get(1,0)); R.set(2,2, K.get(2,0));
-//		R = R.inverse();
-//		t = new Pt3(K.plus(I.times(M2.x)).plus(J.times(M2.y)).times(Z0)).minus(M3);
-		t = new Pt3(K.plus(I.times(M2.x)).plus(J.times(M2.y)).times(Z0)).minus(M3);
+		
+		Stack<Drt3> drts = new Stack<Drt3>();
+		itIm = im.iterator();
+		for (Pt3 p : pts3D) drts.push(new Drt3(p,itIm.next().toPt3().apply(R.inverse()).times(-1)));
+		t = new Pt3eval(drts).p.apply(R).times(-1);          // On évalue t comme l'intersection des droites correspondant aux points vues plutôt qu'avec le modèle utilisé pour plus de précision.
+
 	}
 	
 		

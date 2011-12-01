@@ -145,8 +145,8 @@ public class Interface extends PApplet {
 		fill(color(0xFFFF0000)); stroke(color(0xFFFF0000));
 		// plot(planApts);
 		for (Pt3 p : planApts) plot(p);
-		plot(POS); plot(POS0,0xFF0000FF);
-		
+		plot(POS0,0xFF0000FF);
+		plot(POS); 
 //		fill(color(0xFF0000FF)); stroke(color(0xFF0000FF));
 //		for (Pt3 p : planApts) {
 //			plot(new Drt3(p,p.toPt2Im(POS0, A).toPt3().apply(A.times(POS0.R).inverse()).times(-1)));
@@ -156,6 +156,8 @@ public class Interface extends PApplet {
 		fill(color(0xFF000000)); stroke(color(0xFF000000));
 		Stack<Drt3> drts = new Stack<Drt3>();
 		for (Pt3 p : planApts) {
+//			System.out.println(p.toPt2Im(POS0, A));
+//			
 			Drt3 d = new Drt3(p,p.toPt2Im(POS0, A).toPt3().apply(A.times( POS.R).inverse()).times(-1));
 			drts.push(d);
 			plot(d);
