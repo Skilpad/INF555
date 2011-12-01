@@ -84,12 +84,26 @@ public class Pt3 {
 		x += p.x; y += p.y; z += p.z;
 	}
 	
+	public void subtract(Pt3 p) {
+		x -= p.x; y -= p.y; z -= p.z;
+	}
+	
+	public void multiply(double t) {
+		x *= t; y *= t ; z *= t;
+	}
+	
 	
 /**********************
  *    Calculations    *
  **********************/
 	
-	public double norm() { return Math.sqrt(x*x+y*y+z*z); }
+	public double norm()  { return Math.sqrt(x*x+y*y+z*z); }
+
+	public double norm2() { return (x*x+y*y+z*z); }
+
+	public double dist(Pt3 p)  { return Math.sqrt((x-p.x)*(x-p.x)+(y-p.y)*(y-p.y)+(z-p.z)*(z-p.z)); }
+	
+	public double dist2(Pt3 p) { return ((x-p.x)*(x-p.x)+(y-p.y)*(y-p.y)+(z-p.z)*(z-p.z)); }
 	
 	public Pt3 plus(Pt3 p) {
 		return new Pt3(x+p.x, y+p.y, z+p.z);

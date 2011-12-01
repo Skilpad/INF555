@@ -19,6 +19,22 @@ public class Pt3eval {
 		this.A = new Matrix(3,3); this.Ms = new Pt3();
 	}
 	
+	public Pt3eval(Stack<Drt3> drt) {
+		this.drt = new Stack<Drt3>();
+		this.A = new Matrix(3,3); this.Ms = new Pt3();
+		this.fiability = 0;
+		for (Drt3 d : drt) { 
+			this.drt.push(d); 
+			Matrix a = new Matrix(3,3);
+			a.set(0,0, d.v.y*d.v.y + d.v.z*d.v.z);   a.set(0,1, -d.v.x*d.v.y);                a.set(0,2, -d.v.x*d.v.z);
+			a.set(1,0, a.get(0,1));                  a.set(1,1, d.v.x*d.v.x + d.v.z*d.v.z);   a.set(1,2, -d.v.y*d.v.z);
+			a.set(2,0, a.get(0,2));                  a.set(2,1, a.get(1,2));                  a.set(2,2, d.v.x*d.v.x + d.v.y*d.v.y);
+			A  = A.plus(a);
+			Ms.add(d.M.apply(a));
+		}
+		this.p = (A.det() == 0) ? null : Ms.apply(A.inverse());		
+	}
+	
 	public void add(Pt2 imgP, Position pos) {
 		Drt3 d = new Drt3(imgP,pos);
 		drt.add(d);

@@ -41,6 +41,20 @@ public class Pt2 {
  *      Methods      *
  *********************/
 	
-	public double norm() { return Math.sqrt(x*x+y*y); }
 	
+	
+	
+/**********************
+ *    Calculations    *
+ **********************/
+	
+	public double norm()  { return Math.sqrt(x*x+y*y); }
+
+	public double norm2() { return (x*x+y*y); }
+
+	public double dist(Pt2 p)  { return Math.sqrt((x-p.x)*(x-p.x)+(y-p.y)*(y-p.y)); }
+	
+	public double dist2(Pt2 p) { return ((x-p.x)*(x-p.x)+(y-p.y)*(y-p.y)); }
+	
+
 }

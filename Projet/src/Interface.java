@@ -1,6 +1,7 @@
 
 import java.awt.Point;
 import java.awt.Stroke;
+import java.util.Iterator;
 import java.util.Stack;
 
 import javax.media.opengl.*;
@@ -16,7 +17,7 @@ public class Interface extends PApplet {
 
 	Plan pa, pb, pc;
 	
-	Position view = new Position(Matrix.identity(3,3), new Pt3(2,2, 100));
+	Position view = new Position(Matrix.identity(3,3), new Pt3(0,0, 2000));
 	
 	Matrix A, dist_coeffs;
 	
@@ -36,12 +37,15 @@ public class Interface extends PApplet {
 	
 	//** For test
 		Plan pA, pB, pC;
-		Position POS;
+		Position POS, POS0;
 		Stack<Pt3> planApts;
 	
 	
 	public void setup() {
 
+		view.rotate(0.2, 0.2);
+		view.t = view.t.apply(view.R.inverse());
+		
 		/** Constants & Variables initialization **/
 		// Camera calibration
 		A = Matrix.identity(3,3);
@@ -83,31 +87,30 @@ public class Interface extends PApplet {
 		
 		planApts = new Stack<Pt3>();
 		Stack<Pt2> seen = new Stack<Pt2>();
-		planApts.push(new Pt3(1,1,0));
-		seen.push(    new Pt3(1,1,0).toPt2Im(view, A));
-		planApts.push(new Pt3(3,2,0));
-		seen.push(    new Pt3(3,2,0).toPt2Im(view, A));
-		planApts.push(new Pt3(5,1,0));
-		seen.push(    new Pt3(5,1,0).toPt2Im(view, A));
-		planApts.push(new Pt3(4,3,0));
-		seen.push(    new Pt3(4,3,0).toPt2Im(view, A));
-		planApts.push(new Pt3(6,4,0));
-		seen.push(    new Pt3(6,4,0).toPt2Im(view, A));		
-		planApts.push(new Pt3(4,4,0));
-		seen.push(    new Pt3(4,4,0).toPt2Im(view, A));
-		planApts.push(new Pt3(3,6,0));
-		seen.push(    new Pt3(3,6,0).toPt2Im(view, A));
-		planApts.push(new Pt3(2,4,0));
-		seen.push(    new Pt3(2,4,0).toPt2Im(view, A));
-		planApts.push(new Pt3(0,4,0));
-		seen.push(    new Pt3(0,4,0).toPt2Im(view, A));
-		planApts.push(new Pt3(2,3,0));
-		seen.push(    new Pt3(2,3,0).toPt2Im(view, A));
-		println(seen);
+//		planApts.push(new Pt3(1,1,0));
+//		seen.push(    new Pt3(1,1,0).toPt2Im(view, A));
+//		planApts.push(new Pt3(3,2,1));
+//		seen.push(    new Pt3(3,2,1).toPt2Im(view, A));
+//		planApts.push(new Pt3(5,1,0));
+//		seen.push(    new Pt3(5,1,0).toPt2Im(view, A));
+//		planApts.push(new Pt3(4,3,1));
+//		seen.push(    new Pt3(4,3,1).toPt2Im(view, A));
+//		planApts.push(new Pt3(6,4,0));
+//		seen.push(    new Pt3(6,4,0).toPt2Im(view, A));		
+//		planApts.push(new Pt3(4,4,1));
+//		seen.push(    new Pt3(4,4,1).toPt2Im(view, A));
+//		planApts.push(new Pt3(3,6,0));
+//		seen.push(    new Pt3(3,6,0).toPt2Im(view, A));
+//		planApts.push(new Pt3(2,4,1));
+//		seen.push(    new Pt3(2,4,1).toPt2Im(view, A));
+//		planApts.push(new Pt3(0,4,0));
+//		seen.push(    new Pt3(0,4,0).toPt2Im(view, A));
+//		planApts.push(new Pt3(2,3,1));
+//		seen.push(    new Pt3(2,3,1).toPt2Im(view, A));
+		for (int k = 0; k < 20; k++) planApts.push(new Pt3(60*(Math.random()-0.5),60*(Math.random()-0.5),60*Math.random()));
+		for (Pt3 p : planApts) seen.push(p.toPt2Im(view, A));
 		
-		seen = new Stack<Pt2>();
-		for (Pt3 p : planApts)  seen.push(p.apply(view.R).plus(view.t).apply(A).toPt2());
-		println(seen);
+		System.out.println((new Pt3(4,3,1)) + "  ->  " + (new Pt3(4,3,1).toPt2Im(view, A)));
 		
 //		Stack<Pt2> seen_ = new Stack<Pt2>();
 //		while (!seen.isEmpty()) seen_.push(seen.pop());
@@ -117,12 +120,13 @@ public class Interface extends PApplet {
 		POS = new Position(seen, planApts, A, null);
 		view.R.print(5,5); print(view.t + "\n\n");
 		POS.R.print(5,5);  print(POS.t + "\n\n");
+		POS.R.inverse().print(5,5);  print(POS.t + "\n\n");
+		POS0 = new Position(view.R, view.t);
 
 		/** Window **/
 		size(1024,768);
 		plot();
 	}
-	
 	
 	public void draw() {}
 	
@@ -139,8 +143,26 @@ public class Interface extends PApplet {
 		plot(new Pt3( 0, 0, 1));
 		
 		fill(color(0xFFFF0000)); stroke(color(0xFFFF0000));
-		plot(planApts);
-		plot(POS);
+		// plot(planApts);
+		for (Pt3 p : planApts) plot(p);
+		plot(POS); plot(POS0,0xFF0000FF);
+		
+//		fill(color(0xFF0000FF)); stroke(color(0xFF0000FF));
+//		for (Pt3 p : planApts) {
+//			plot(new Drt3(p,p.toPt2Im(POS0, A).toPt3().apply(A.times(POS0.R).inverse()).times(-1)));
+//		}
+//
+//		fill(color(0xFFFF0000)); stroke(color(0xFFFF0000));
+		fill(color(0xFF000000)); stroke(color(0xFF000000));
+		Stack<Drt3> drts = new Stack<Drt3>();
+		for (Pt3 p : planApts) {
+			Drt3 d = new Drt3(p,p.toPt2Im(POS0, A).toPt3().apply(A.times( POS.R).inverse()).times(-1));
+			drts.push(d);
+			plot(d);
+		}
+		fill(color(0xFFFF0000)); stroke(color(0xFFFF0000));
+		plot(new Pt3eval(drts).p);
+		
 		
 //		fill(color(0xFF0000FF)); stroke(color(0xFF0000FF));
 //		plot(new Pt3( 1, 1,-1));
@@ -227,11 +249,11 @@ public class Interface extends PApplet {
 		Pt3 p_0    = null;
 		for (Pt3 p : P) {
 			if (pts) plot(p);
-			if (p_0    != null) p_0 = p;
+			if (p_0    == null) p_0 = p;
 			if (p_last != null) plot(p_last, p);
 			p_last = p;
 		}
-		plot(p_last, P.peek());
+		plot(p_last, p_0);
 	}
 	
 	public void plot(Pt2 a, Pt2 b) {
@@ -278,14 +300,19 @@ public class Interface extends PApplet {
 	}
 	
 	public void plot(Position pos) {
+		plot(pos, 0xFFFF0000);
+	}
+	
+	public void plot(Position pos, int c) {
 		Pt3 p0 = pos.t.apply(pos.R.inverse()).times(-1);
 		Pt3 p1 = new Pt3( 2, 2,7).apply(pos.R.inverse()).minus(pos.t.apply(pos.R.inverse()));
 		Pt3 p2 = new Pt3( 2,-2,7).apply(pos.R.inverse()).minus(pos.t.apply(pos.R.inverse()));
 		Pt3 p3 = new Pt3(-2, 2,7).apply(pos.R.inverse()).minus(pos.t.apply(pos.R.inverse()));
 		Pt3 p4 = new Pt3(-2,-2,7).apply(pos.R.inverse()).minus(pos.t.apply(pos.R.inverse()));
-		fill(color(0xFFFF0000)); stroke(color(0xFFFF0000));
+		Pt3 p5 = new Pt3( 0, 0,70).apply(pos.R.inverse()).minus(pos.t.apply(pos.R.inverse()));		
+		fill(color(c)); stroke(color(c));
 		plot(p0);
-		plot(p0,p1); plot(p0,p2); plot(p0,p3); plot(p0,p4);
+		plot(p0,p1); plot(p0,p2); plot(p0,p3); plot(p0,p4); plot(p0,p5);
 		fill(color(0xFFFFFFFF));
 		plot(p1); plot(p2); plot(p3); plot(p4);
 	}
