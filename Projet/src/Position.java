@@ -11,7 +11,8 @@ public class Position {
 	public Pt3 t;
 	public double aX, aY;
 	
-	private static double threshold2 = 0.0000001;
+	private static double threshold2  = 0.0000001;
+	private static double threshold2d = 0.0000001;
 	
 	
 /**********************
@@ -105,62 +106,106 @@ public class Position {
 
 		S = V.times(S).times(U.transpose());           // S = pseudo-inverse(MList)
 		
-		Matrix I = null, J = null, K = new Matrix(3,1);      //   I = s i , J = s j , K = s k   until the end of while loop
-		double Z0 = 0;
 		if (c == 0) {     // Coplanar object points   [ http://ieeexplore.ieee.org/stamp/stamp.jsp?arnumber=00341055&tag=1 ]
+			
 			Matrix up = new Matrix(3,1); up.set(2,0, 1);
 			up = V.times(up); up = up.times(1/up.norm2());   // up: orthogonal to {Mi}'s plan, with ||up|| = 1
-			Matrix epsList1 = new Matrix(nPts,1);
-			Matrix epsList2 = null;
-			Matrix xList = new Matrix(nPts, 1) , yList = new Matrix(nPts, 1);
-			int i = 0; for (Pt2 p : im) { xList.set(i,0, p.x*(1+epsList1.get(i,0))-M2.x ); i++; }
-				i = 0; for (Pt2 p : im) { yList.set(i,0, p.y*(1+epsList1.get(i,0))-M2.y ); i++; }
-			Matrix I1 = S.times(xList), J1 = S.times(yList), K1 = new Matrix(3,1);
-			Matrix I2 = null, J2 = null, K2 = new Matrix(3,1);;
-			a = - ( I1.get(0,0)*J1.get(0,0) + I1.get(1,0)*J1.get(1,0) + I1.get(2,0)*J1.get(2,0) );		// a = -I1.J1 
-			b = J1.norm2() - I1.norm2();																// b = J1² - I1²
-			double lambda = 0, mu = 0;
-			double delta = Math.sqrt(b*b+4*a*a);
-			lambda = Math.sqrt((delta+b)/2);
-			mu     = Math.sqrt((delta-b)/2) * ((a < 0) ? -1 : 1);
 			
-			I2 = I1.plus(up.times(-lambda));
-			J2 = J1.plus(up.times(-mu));
+			boolean[] done    = new boolean[2];   
+			Matrix[]  epsList = new Matrix[2];
+			Matrix[]  R       = new Matrix[2];
+			Pt3[]     t       = new Pt3[2];
+			double[]  d2d     = new double[2];
+			double[]  s       = new double[2];
 			
-			I1 = I1.plus(up.times(lambda));
-			J1 = J1.plus(up.times(mu));
+			done[0] = false; done[1] = false;
+			epsList[0] = new Matrix(nPts,1); epsList[1] = null;
 			
-			K2.set(0,0, I2.get(1,0)*J2.get(2,0) - I2.get(2,0)*J2.get(1,0)); 
-			K2.set(1,0, I2.get(2,0)*J2.get(0,0) - I2.get(0,0)*J2.get(2,0)); 
-			K2.set(2,0, I2.get(0,0)*J2.get(1,0) - I2.get(1,0)*J2.get(0,0));	
-			double s1 = I2.norm2(), s2 = J2.norm2(); 
-			K2.times((s1+s2)/(2*s1*s2));
-			
-			K1.set(0,0, I1.get(1,0)*J1.get(2,0) - I1.get(2,0)*J1.get(1,0)); 
-			K1.set(1,0, I1.get(2,0)*J1.get(0,0) - I1.get(0,0)*J1.get(2,0)); 
-			K1.set(2,0, I1.get(0,0)*J1.get(1,0) - I1.get(1,0)*J1.get(0,0));		// K <- I^J = s1 s2 k = (s1 s2 / s) s k , s = (s1+s2)/2
-			s1 = I1.norm2(); s2 = J1.norm2(); 
-			K1.times((s1+s2)/(2*s1*s2));		// K <- K * ( s / (s1 s2)) = K * ( (s1+s2) / (2 s1 s2) )
-			
-			Matrix epsList2_ = MList.times(K2);			//  after one iteration: Z0 = f/s, and thus 1/Z0 = s/f = s. So: (M3Mi.k)/Z0 = M3Mi.(sk) = M3Mi.K
-			double d22 = epsList2_.minus(epsList1).norm2();
-			epsList2 = epsList2_;
+			while ( ! (done[0] && done[1])) {
+				for (int i = 0; i < 2; i++) {
+					Matrix xList = new Matrix(nPts, 1) , yList = new Matrix(nPts, 1);
+					int k = 0; for (Pt2 p : im) { xList.set(i,0, p.x*(1+epsList[i].get(k,0))-M2.x ); k++; }
+						k = 0; for (Pt2 p : im) { yList.set(i,0, p.y*(1+epsList[i].get(k,0))-M2.y ); k++; }
+					Matrix I0 = S.times(xList), J0 = S.times(yList);
+					a = - ( I0.get(0,0)*J0.get(0,0) + I0.get(1,0)*J0.get(1,0) + I0.get(2,0)*J0.get(2,0) );		// a = -I0.J0
+					b = J0.get(0,0)*J0.get(0,0) + J0.get(1,0)*J0.get(1,0) + J0.get(2,0)*J0.get(2,0) - I0.get(0,0)*I0.get(0,0) - I0.get(1,0)*I0.get(1,0) - I0.get(2,0)*I0.get(2,0);	// b = J0² - I0²
+					double delta = Math.sqrt(b*b+4*a*a);
+					double lambda = Math.sqrt((delta+b)/2);
+					double mu     = Math.sqrt((delta-b)/2) * ((a < 0) ? -1 : 1);
 
-			Matrix epsList1_ = MList.times(K1);			//  after one iteration: Z0 = f/s, and thus 1/Z0 = s/f = s. So: (M3Mi.k)/Z0 = M3Mi.(sk) = M3Mi.K
-			double d21 = epsList1_.minus(epsList1).norm2();
-			epsList1 = epsList1_;
-			
-			
-			
-			// ....
-			
-			
-			
+					System.out.println("##################################");
+					I0.print(5,5); J0.print(5,5);
+					System.out.println("a: " + a);
+					System.out.println("b: " + b);
+					System.out.println("lambda: " + lambda);
+					System.out.println("mu: "     + mu);
+					System.out.println("##################################");
+						
+					Matrix[] I    = new Matrix[2]; Matrix[] J = new Matrix[2]; Matrix[] K = new Matrix[2];
+					double[] d2d_ = new double[2];
+					Matrix[]  R_  = new Matrix[2];
+					Pt3[]     t_  = new Pt3[2];
+					I[0] =  I0.plus(up.times(lambda)); J[0] =  J0.plus(up.times(mu)); 
+					I[1] = I0.minus(up.times(lambda)); J[1] = J0.minus(up.times(mu));
+					for (int j = 0; j < 2; j++) {
+						double s1 = I[j].norm2(); double s2 = J[j].norm2(); 
+						s[j] = (s1+s2)/2;
+						I[j] = I[j].times(1/s1); J[j] = J[j].times(1/s2);
+						K[j] = new Matrix(3,1);
+						K[j].set(0,0, I[j].get(1,0)*J[j].get(2,0) - I[j].get(2,0)*J[j].get(1,0)); 
+						K[j].set(1,0, I[j].get(2,0)*J[j].get(0,0) - I[j].get(0,0)*J[j].get(2,0)); 
+						K[j].set(2,0, I[j].get(0,0)*J[j].get(1,0) - I[j].get(1,0)*J[j].get(0,0));		// K <- I^J = s1 s2 k = (s1 s2 / s) s k , s = (s1+s2)/2
+						
+						System.out.println("~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~");
+						I[j].print(5,5); J[j].print(5,5); K[j].print(5,5);
+						System.out.println("~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~");
+						
+						R_[j] = new Matrix(3,3);
+						R_[j].set(0,0, I[j].get(0,0)); R_[j].set(0,1, I[j].get(1,0)); R_[j].set(0,2, I[j].get(2,0));
+						R_[j].set(1,0, J[j].get(0,0)); R_[j].set(1,1, J[j].get(1,0)); R_[j].set(1,2, J[j].get(2,0));
+						R_[j].set(2,0, K[j].get(0,0)); R_[j].set(2,1, K[j].get(1,0)); R_[j].set(2,2, K[j].get(2,0));		
+//						t_[j] = new Pt3(K[j]).times(1/s[j]).apply(R_[j]).times(-1).plus(M3);
+						t_[j] = new Pt3(K[j]).times(1/s[j]).times(-1).plus(M3);
+						
+						Position pos = new Position(R_[j],t_[j]);
+						d2d_[j] = 0;
+						itIm = im.iterator();
+//						for (Pt3 p : pts3D)  d2d_[j] += p.toPt2Im(pos, Matrix.identity(3,3)).dist2(itIm.next());
+						
+//						this.R = pos.R; this.t = pos.t; if (true) return;
+						
+						pos.R.print(5, 5); System.out.println(pos.t+"\n");
+						for (Pt3 p : pts3D) {
+							Pt2 pp  = p.toPt2Im(pos, Matrix.identity(3,3));
+							if (pp == null) { d2d_[j] = Double.POSITIVE_INFINITY; break; }
+							Pt2 pp_ = itIm.next();
+							d2d_[j] += pp.dist2(pp_);
+						}
+					}
+					int j = (d2d_[0] < d2d_[1]) ? 0 : 1;
+					if (d2d_[j] < threshold2d*nPts) { this.R = R_[j]; this.t = t_[j]; return; }
+					if (epsList[1] == null) {
+						R[0] = R_[0]; t[0] = t_[0]; d2d[0] = d2d_[0];
+						epsList[0] = MList.times(K[0]).times(s[0]);			//  after one iteration: Z0 = f/s, and thus 1/Z0 = s/f = s. So: (M3Mi.k)/Z0 = s M3Mi.k
+						R[1] = R_[1]; t[1] = t_[1]; d2d[1] = d2d_[1];
+						epsList[1] = MList.times(K[1]).times(s[1]);			//  after one iteration: Z0 = f/s, and thus 1/Z0 = s/f = s. So: (M3Mi.k)/Z0 = s M3Mi.k
+						break;
+					} else {
+						R[i] = R_[j]; t[i] = t_[j]; d2d[i] = d2d_[j];
+						Matrix epsList_ = MList.times(K[j]).times(s[j]);			//  after one iteration: Z0 = f/s, and thus 1/Z0 = s/f = s. So: (M3Mi.k)/Z0 = s M3Mi.k
+						if (epsList_.minus(epsList[i]).norm2() < threshold2*nPts) done[i] = true;
+						epsList[i] = epsList_;
+					}					
+				}
+			}
+			int j = (d2d[0] < d2d[1]) ? 0 : 1;
+			this.R = R[j]; this.t = t[j];
 		} else {          // Non-coplanar object points   [ http://www.cfar.umd.edu/~daniel/daniel_papersfordownload/Pose25Lines.pdf ]
+			Matrix I = null, J = null, K = new Matrix(3,1);      //   I = s i , J = s j , K = s k   until the end of while loop
 			Matrix epsList = new Matrix(nPts,1);
 			double s1 = 0, s2 = 0;
 			d2 = Double.POSITIVE_INFINITY;
-			while (d2 > threshold2) {
+			while (d2 > threshold2*nPts) {
 				Matrix xList = new Matrix(nPts, 1) , yList = new Matrix(nPts, 1);
 				int i = 0; for (Pt2 p : im) { System.out.println(p+" <=> ("+(MList.get(i,0)+M3.x)+","+(MList.get(i,1)+M3.y)+","+(MList.get(i,2)+M3.z)+")");  xList.set(i,0, p.x*(1+epsList.get(i,0))-M2.x ); i++; }
 					i = 0; for (Pt2 p : im) { yList.set(i,0, p.y*(1+epsList.get(i,0))-M2.y ); i++; }
@@ -174,117 +219,25 @@ public class Position {
 				d2 = epsList_.minus(epsList).norm2();
 				epsList = epsList_;
 			}
+			R = new Matrix(3,3);
+			R.set(0,0, I.get(0,0)); R.set(0,1, I.get(1,0)); R.set(0,2, I.get(2,0));
+			R.set(1,0, J.get(0,0)); R.set(1,1, J.get(1,0)); R.set(1,2, J.get(2,0));
+			R.set(2,0, K.get(0,0)); R.set(2,1, K.get(1,0)); R.set(2,2, K.get(2,0));	
+			Stack<Drt3> drts = new Stack<Drt3>();
+			itIm = im.iterator();
+			for (Pt3 p : pts3D) drts.push(new Drt3(p,itIm.next().toPt3().apply(R.inverse()).times(-1)));
+			t = new Pt3eval(drts).p.apply(R).times(-1);          // On évalue t comme l'intersection des droites correspondant aux points vues plutôt qu'avec le modèle utilisé pour plus de précision.
+			
+			
+			
+//			t = new Pt3(K.times(2/(s1+s2))).apply(R).times(-1).plus(M3);
 		}
 		
-		R = new Matrix(3,3);
-		R.set(0,0, I.get(0,0)); R.set(0,1, I.get(1,0)); R.set(0,2, I.get(2,0));
-		R.set(1,0, J.get(0,0)); R.set(1,1, J.get(1,0)); R.set(1,2, J.get(2,0));
-		R.set(2,0, K.get(0,0)); R.set(2,1, K.get(1,0)); R.set(2,2, K.get(2,0));
 		
-		Stack<Drt3> drts = new Stack<Drt3>();
-		itIm = im.iterator();
-		for (Pt3 p : pts3D) drts.push(new Drt3(p,itIm.next().toPt3().apply(R.inverse()).times(-1)));
-		t = new Pt3eval(drts).p.apply(R).times(-1);          // On évalue t comme l'intersection des droites correspondant aux points vues plutôt qu'avec le modèle utilisé pour plus de précision.
 
 	}
 	
 		
-	
-//	public Position(Stack<Pt2> pts2D, Stack<Pt3> pts3D, Matrix A, Matrix dist_coeffs) {    // Built solving PnP. DistCoeff = {{k1,k2,k3,p1,p2}} || {{k1,k2,p1,p2}} || {{k1,k2,k3,p1,p2}}^T || {{k1,k2,p1,p2}}^T || null.
-//		int nPts = pts3D.size();
-//		double fx = A.get(0, 0), fy = A.get(1,1), cx = A.get(0,2), cy = A.get(1,2);
-//		double k1, k2, k3, p1, p2;
-//		if (dist_coeffs == null) { k1 = k2 = k3 = p1 = p2 = 0; }
-//		else if (dist_coeffs.getColumnDimension() == 1) {
-//			k1 = dist_coeffs.get(0,0); k2 = dist_coeffs.get(1,0);
-//			if (dist_coeffs.getColumnDimension() == 4) { k3 = 0; p1 = dist_coeffs.get(2,0); p2 = dist_coeffs.get(3,0); }
-//			else { k3 = dist_coeffs.get(2,0); p1 = dist_coeffs.get(3,0); p2 = dist_coeffs.get(4,0); }
-//		} else {
-//			k1 = dist_coeffs.get(0,0); k2 = dist_coeffs.get(0,1);
-//			if (dist_coeffs.getRowDimension() == 4) { k3 = 0; p1 = dist_coeffs.get(0,2); p2 = dist_coeffs.get(0,3); }
-//			else { k3 = dist_coeffs.get(0,2); p1 = dist_coeffs.get(0,3); p2 = dist_coeffs.get(0,4); }
-//		}
-//		// Correct distortion
-//		Stack<Pt2> im  = new Stack<Pt2>();
-//		for (Pt2 p : pts2D) {
-//			if (dist_coeffs == null) im.push(new Pt2((p.x-cx)/fx,(p.y-cy)/fy));
-//			else {
-//				double r2 = p.x*p.x + p.y*p.y;
-//				double k = 1 + k1*r2 + k2*r2*r2 + k3*r2*r2*r2;
-//				double x = p.x * k + 2*p1*p.x*p.y + p2*(r2+2*p.x*p.x);
-//				double y = p.y * k + 2*p2*p.x*p.y + p1*(r2+2*p.y*p.y);
-//				im.push(new Pt2((x-cx)/fx,(y-cy)/fy));
-//			}
-//		}
-//		// Calcul du centre de gravité
-//		Pt3 mc = new Pt3();
-//		for (Pt3 p : pts3D) { mc.x += p.x; mc.y += p.y; mc.z += p.z; }
-//		mc.x /= nPts; mc.y /= nPts; mc.z /= nPts;
-//		// Calcul de MM
-//		
-//		mc = new Pt3();
-//		
-//		double mm[][] = new double[3][3];
-//		for (Pt3 p : pts3D) { 
-//			mm[0][0] += (p.x - mc.x)*(p.x - mc.x);
-//			mm[0][1] += (p.x - mc.x)*(p.y - mc.y);
-//			mm[0][2] += (p.x - mc.x)*(p.z - mc.z);
-//			mm[1][1] += (p.y - mc.y)*(p.y - mc.y);
-//			mm[1][2] += (p.y - mc.y)*(p.z - mc.z);
-//			mm[2][2] += (p.z - mc.z)*(p.z - mc.z);
-//		}
-//		mm[1][0] = mm[0][1]; mm[2][0] = mm[0][2]; mm[2][1] = mm[1][2]; 
-//		SingularValueDecomposition svd = (new Matrix(mm)).svd();
-//		// initialize extrinsic parameters
-//
-////System.out.println("\n***********************************************\n");
-//		
-//		if (true) { // planar case
-//			R = svd.getV();
-////System.out.println("\nR t -------------------------------");
-////R.print(10,3);
-//			if ( R.get(0,0)*R.get(0,0)+R.get(1,1)*R.get(1,1) < 0.000000001 ) R = Matrix.identity(3,3);
-//			if ( R.det() < 0 ) R = R.times(-1);
-//			t = mc.apply(R).times(-1);
-////System.out.println(t);
-//			
-//			Stack<Pt2> objXY = new Stack<Pt2>();
-//			for (Pt3 p : pts3D) {
-//				objXY.push(p.apply(R).plus(t).cutToPt2());
-//			}
-//			Matrix H = Homographie.find(objXY, im);
-//
-////System.out.println("\n\nH ---------------------------------");
-////H.print(10,3);
-//
-//			Pt3 h1 = new Pt3(H.get(0,0), H.get(1,0), H.get(2,0));
-//			Pt3 h2 = new Pt3(H.get(0,1), H.get(1,1), H.get(2,1));
-//			Pt3 tt = new Pt3(H.get(0,2), H.get(1,2), H.get(2,2));
-//			double n1 = h1.norm(), n2 = h2.norm();
-//			h1.rescale(1/n1); h2.rescale(1/n2); tt.rescale(2/(n1+n2));
-//			Pt3 h3 = h1.cross(h2);
-//			
-//			H.set(0,0, h1.x); H.set(0,1, h2.x); H.set(0,2, h3.x);
-//			H.set(1,0, h1.y); H.set(1,1, h2.y); H.set(1,2, h3.y);
-//			H.set(2,0, h1.z); H.set(2,1, h2.z); H.set(2,2, h3.z);
-//			
-////System.out.println("H ---------------------------------");
-////H.print(10,3);
-//
-//			H = rodrigues(rodrigues(H));
-////System.out.println("H ---------------------------------");
-////H.print(10,3);
-//
-//			t = t.apply(H).plus(tt);
-//			R = H.times(R);
-//			
-//		} else {    // non planar case
-//		}
-//
-////System.out.println("\n***********************************************\n");	
-//	
-//	}
-
 
 /*********************
  *     Modifying     *
@@ -361,6 +314,8 @@ public class Position {
 		}
 		return res;
 	}
+	
+	
 	
 
 }

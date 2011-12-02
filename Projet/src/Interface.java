@@ -4,7 +4,6 @@ import java.awt.Stroke;
 import java.util.Iterator;
 import java.util.Stack;
 
-import javax.media.opengl.*;
 import javax.swing.JFileChooser;
 
 import Jama.Matrix;
@@ -17,7 +16,7 @@ public class Interface extends PApplet {
 
 	Plan pa, pb, pc;
 	
-	Position view = new Position(Matrix.identity(3,3), new Pt3(0,0, 2000));
+	Position view = new Position(Matrix.identity(3,3), new Pt3(0,0, 200));
 	
 	Matrix A, dist_coeffs;
 	
@@ -87,28 +86,12 @@ public class Interface extends PApplet {
 		
 		planApts = new Stack<Pt3>();
 		Stack<Pt2> seen = new Stack<Pt2>();
-//		planApts.push(new Pt3(1,1,0));
-//		seen.push(    new Pt3(1,1,0).toPt2Im(view, A));
-//		planApts.push(new Pt3(3,2,1));
-//		seen.push(    new Pt3(3,2,1).toPt2Im(view, A));
-//		planApts.push(new Pt3(5,1,0));
-//		seen.push(    new Pt3(5,1,0).toPt2Im(view, A));
-//		planApts.push(new Pt3(4,3,1));
-//		seen.push(    new Pt3(4,3,1).toPt2Im(view, A));
-//		planApts.push(new Pt3(6,4,0));
-//		seen.push(    new Pt3(6,4,0).toPt2Im(view, A));		
-//		planApts.push(new Pt3(4,4,1));
-//		seen.push(    new Pt3(4,4,1).toPt2Im(view, A));
-//		planApts.push(new Pt3(3,6,0));
-//		seen.push(    new Pt3(3,6,0).toPt2Im(view, A));
-//		planApts.push(new Pt3(2,4,1));
-//		seen.push(    new Pt3(2,4,1).toPt2Im(view, A));
-//		planApts.push(new Pt3(0,4,0));
-//		seen.push(    new Pt3(0,4,0).toPt2Im(view, A));
-//		planApts.push(new Pt3(2,3,1));
-//		seen.push(    new Pt3(2,3,1).toPt2Im(view, A));
-		for (int k = 0; k < 20; k++) planApts.push(new Pt3(60*(Math.random()-0.5),60*(Math.random()-0.5),60*Math.random()));
+		for (int k = 0; k < 20; k++) { double az = Math.random(); planApts.push(new Pt3(60*(Math.random()-0.5),60*(az-0.5),10*(az-0.5)));}
+//		for (int k = 0; k < 20; k++) planApts.push(new Pt3(60*(Math.random()-0.5),60*(Math.random()-0.5),0));
+//		for (int k = 0; k < 20; k++) planApts.push(new Pt3(60*(Math.random()-0.5),60*(Math.random()-0.5),60*Math.random()));
 		for (Pt3 p : planApts) seen.push(p.toPt2Im(view, A));
+		
+		view.R.print(5, 5); System.out.println(view.t+"\n");
 		
 		System.out.println((new Pt3(4,3,1)) + "  ->  " + (new Pt3(4,3,1).toPt2Im(view, A)));
 		
@@ -209,6 +192,7 @@ public class Interface extends PApplet {
 			case 'q' : view.moveRight(-dt); break;
 			case '+' : dt += 0.1; break;
 			case '-' : if (dt > 0.1) dt -= 0.1; break;
+			case 'r' : setup(); break;
 		}
 		plot();
 	}
