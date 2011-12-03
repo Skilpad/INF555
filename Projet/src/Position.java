@@ -101,15 +101,21 @@ public class Position {
 		
 		double a = S.get(0,0), b = S.get(1,1), c = S.get(2,2);
 		a = 1/a; b = 1/b;
-		c = (c > 0.001*a) ? 1/c : 0;
+		c = (c > 0.00001*a) ? 1/c : 0;
 		S.set(0,0, a); S.set(1,1, b); S.set(2,2, c);	
 
 		S = V.times(S).times(U.transpose());           // S = pseudo-inverse(MList)
 		
+		
+		
 		if (c == 0) {     // Coplanar object points   [ http://ieeexplore.ieee.org/stamp/stamp.jsp?arnumber=00341055&tag=1 ]
+			
+			
 			
 			Matrix up = new Matrix(3,1); up.set(2,0, 1);
 			up = V.times(up); up = up.times(1/up.norm2());   // up: orthogonal to {Mi}'s plan, with ||up|| = 1
+			
+			System.out.println("up: "); up.print(5,5);
 			
 			boolean[] done    = new boolean[2];   
 			Matrix[]  epsList = new Matrix[2];
@@ -124,9 +130,24 @@ public class Position {
 			while ( ! (done[0] && done[1])) {
 				for (int i = 0; i < 2; i++) {
 					Matrix xList = new Matrix(nPts, 1) , yList = new Matrix(nPts, 1);
-					int k = 0; for (Pt2 p : im) { xList.set(i,0, p.x*(1+epsList[i].get(k,0))-M2.x ); k++; }
-						k = 0; for (Pt2 p : im) { yList.set(i,0, p.y*(1+epsList[i].get(k,0))-M2.y ); k++; }
+					int k = 0; for (Pt2 p : im) { xList.set(k,0, p.x*(1+epsList[i].get(k,0))-M2.x ); k++; }
+						k = 0; for (Pt2 p : im) { yList.set(k,0, p.y*(1+epsList[i].get(k,0))-M2.y ); k++; }
 					Matrix I0 = S.times(xList), J0 = S.times(yList);
+					
+					Matrix K0 = new Matrix(3,1);
+					K0.set(0,0, I0.get(1,0)*J0.get(2,0) - I0.get(2,0)*J0.get(1,0));
+					K0.set(1,0, I0.get(2,0)*J0.get(0,0) - I0.get(0,0)*J0.get(2,0));
+					K0.set(2,0, I0.get(0,0)*J0.get(1,0) - I0.get(1,0)*J0.get(0,0));
+					Matrix Ivu = new Matrix(3,1);
+					Ivu.set(0,0, I0.get(1,0)*up.get(2,0) - up.get(2,0)*J0.get(1,0));
+					Ivu.set(1,0, I0.get(2,0)*up.get(0,0) - up.get(0,0)*J0.get(2,0));
+					Ivu.set(2,0, I0.get(0,0)*up.get(1,0) - up.get(1,0)*J0.get(0,0));
+					Matrix Jvu = new Matrix(3,1);
+					Jvu.set(0,0, J0.get(1,0)*up.get(2,0) - up.get(2,0)*J0.get(1,0));
+					Jvu.set(1,0, J0.get(2,0)*up.get(0,0) - up.get(0,0)*J0.get(2,0));
+					Jvu.set(2,0, J0.get(0,0)*up.get(1,0) - up.get(1,0)*J0.get(0,0));
+					
+					
 					a = - ( I0.get(0,0)*J0.get(0,0) + I0.get(1,0)*J0.get(1,0) + I0.get(2,0)*J0.get(2,0) );		// a = -I0.J0
 					b = J0.get(0,0)*J0.get(0,0) + J0.get(1,0)*J0.get(1,0) + J0.get(2,0)*J0.get(2,0) - I0.get(0,0)*I0.get(0,0) - I0.get(1,0)*I0.get(1,0) - I0.get(2,0)*I0.get(2,0);	// b = J0² - I0²
 					double delta = Math.sqrt(b*b+4*a*a);
@@ -134,30 +155,61 @@ public class Position {
 					double mu     = Math.sqrt((delta-b)/2) * ((a < 0) ? -1 : 1);
 
 					System.out.println("##################################");
-					I0.print(5,5); J0.print(5,5);
+					System.out.println("\nI0");
+					I0.print(20,20); 
+					System.out.println(I0.norm2());
+					System.out.println("\nJ0");
+					J0.print(20,20);
+					System.out.println(J0.norm2());
+					System.out.println("\nK0");
+					K0.print(20,20);
+					System.out.println(K0.norm2());
+					System.out.println("\nup");
+					up.print(20,20);
+					System.out.println(up.norm2());
+					System.out.println("\nIvu");
+					Ivu.print(20,20);
+					System.out.println(Ivu.norm2());
+					System.out.println("\nJvu");
+					Jvu.print(20,20);
+					System.out.println(Jvu.norm2());
 					System.out.println("a: " + a);
 					System.out.println("b: " + b);
 					System.out.println("lambda: " + lambda);
 					System.out.println("mu: "     + mu);
 					System.out.println("##################################");
-						
+					
 					Matrix[] I    = new Matrix[2]; Matrix[] J = new Matrix[2]; Matrix[] K = new Matrix[2];
 					double[] d2d_ = new double[2];
 					Matrix[]  R_  = new Matrix[2];
 					Pt3[]     t_  = new Pt3[2];
-					I[0] =  I0.plus(up.times(lambda)); J[0] =  J0.plus(up.times(mu)); 
-					I[1] = I0.minus(up.times(lambda)); J[1] = J0.minus(up.times(mu));
+					I[0] =  I0.plus(up.times(lambda)); J[0] =  J0.plus(up.times(mu)); K[0] = K0.plus(Ivu.times(mu)).plus(Jvu.times(lambda));
+					I[1] = I0.minus(up.times(lambda)); J[1] = J0.minus(up.times(mu)); K[1] = K0.minus(Ivu.times(mu)).minus(Jvu.times(lambda));
+
+					
+					I[0].print(20,20); 
+					System.out.println(I[0].norm2());
+					J[0].print(20,20);
+					System.out.println(J[0].norm2());
+					K[0].print(20,20);
+					System.out.println(K[0].norm2());
+
+//					I[0] = new Matrix(3,1); I[0].set(0,0,1);  I[1] = new Matrix(3,1); I[1].set(0,0,1);
+//					J[0] = new Matrix(3,1); J[0].set(1,0,1);  J[1] = new Matrix(3,1); J[1].set(1,0,-1);
+//					K[0] = new Matrix(3,1); K[0].set(2,0,1);  K[1] = new Matrix(3,1); K[1].set(2,0,-1);
+					
 					for (int j = 0; j < 2; j++) {
-						double s1 = I[j].norm2(); double s2 = J[j].norm2(); 
-						s[j] = (s1+s2)/2;
-						I[j] = I[j].times(1/s1); J[j] = J[j].times(1/s2);
-						K[j] = new Matrix(3,1);
-						K[j].set(0,0, I[j].get(1,0)*J[j].get(2,0) - I[j].get(2,0)*J[j].get(1,0)); 
-						K[j].set(1,0, I[j].get(2,0)*J[j].get(0,0) - I[j].get(0,0)*J[j].get(2,0)); 
-						K[j].set(2,0, I[j].get(0,0)*J[j].get(1,0) - I[j].get(1,0)*J[j].get(0,0));		// K <- I^J = s1 s2 k = (s1 s2 / s) s k , s = (s1+s2)/2
+//						double s1 = I[j].norm2(); double s2 = J[j].norm2(); 
+						s[j] = K[j].norm2();
+						I[j] = I[j].times(1/I[j].norm2()); J[j] = J[j].times(1/J[j].norm2()); K[j] = K[j].times(1/K[j].norm2());
+//						K[j] = new Matrix(3,1);
+//						K[j].set(0,0, I[j].get(1,0)*J[j].get(2,0) - I[j].get(2,0)*J[j].get(1,0)); 
+//						K[j].set(1,0, I[j].get(2,0)*J[j].get(0,0) - I[j].get(0,0)*J[j].get(2,0)); 
+//						K[j].set(2,0, I[j].get(0,0)*J[j].get(1,0) - I[j].get(1,0)*J[j].get(0,0));		// K <- I^J = s1 s2 k = (s1 s2 / s) s k , s = (s1+s2)/2
 						
 						System.out.println("~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~");
-						I[j].print(5,5); J[j].print(5,5); K[j].print(5,5);
+						I[j].print(10,10); J[j].print(10,10); K[j].print(10,10);
+						System.out.println(I[j].norm2() + " - " + J[j].norm2() + " - " + K[j].norm2() + "\n");
 						System.out.println("~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~");
 						
 						R_[j] = new Matrix(3,3);
@@ -200,14 +252,20 @@ public class Position {
 			}
 			int j = (d2d[0] < d2d[1]) ? 0 : 1;
 			this.R = R[j]; this.t = t[j];
+			
+			
+			
 		} else {          // Non-coplanar object points   [ http://www.cfar.umd.edu/~daniel/daniel_papersfordownload/Pose25Lines.pdf ]
+			
+			
+			
 			Matrix I = null, J = null, K = new Matrix(3,1);      //   I = s i , J = s j , K = s k   until the end of while loop
 			Matrix epsList = new Matrix(nPts,1);
 			double s1 = 0, s2 = 0;
 			d2 = Double.POSITIVE_INFINITY;
 			while (d2 > threshold2*nPts) {
 				Matrix xList = new Matrix(nPts, 1) , yList = new Matrix(nPts, 1);
-				int i = 0; for (Pt2 p : im) { System.out.println(p+" <=> ("+(MList.get(i,0)+M3.x)+","+(MList.get(i,1)+M3.y)+","+(MList.get(i,2)+M3.z)+")");  xList.set(i,0, p.x*(1+epsList.get(i,0))-M2.x ); i++; }
+				int i = 0; for (Pt2 p : im) { xList.set(i,0, p.x*(1+epsList.get(i,0))-M2.x ); i++; }
 					i = 0; for (Pt2 p : im) { yList.set(i,0, p.y*(1+epsList.get(i,0))-M2.y ); i++; }
 				I = S.times(xList); J = S.times(yList);
 				s1 = I.norm2(); s2 = J.norm2(); 
