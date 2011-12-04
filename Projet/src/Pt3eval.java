@@ -6,7 +6,6 @@ import Jama.Matrix;
 public class Pt3eval {
 
 	public Pt3     p;
-	public double  fiability;
 
 	private Stack<Drt3> drt;
 	private Matrix A;
@@ -15,14 +14,12 @@ public class Pt3eval {
 	public Pt3eval() {
 		this.p = null; 
 		this.drt = new Stack<Drt3>();
-		this.fiability = 0;
 		this.A = new Matrix(3,3); this.Ms = new Pt3();
 	}
 	
 	public Pt3eval(Stack<Drt3> drt) {
 		this.drt = new Stack<Drt3>();
 		this.A = new Matrix(3,3); this.Ms = new Pt3();
-		this.fiability = 0;
 		for (Drt3 d : drt) { 
 			this.drt.push(d); 
 			Matrix a = new Matrix(3,3);
@@ -51,5 +48,7 @@ public class Pt3eval {
 	public String toString() {
 		return (drt + " >>  " + p);
 	}
+	
+	public int nbDrt() { return drt.size(); }
 	
 }
