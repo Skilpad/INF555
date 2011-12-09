@@ -12,16 +12,16 @@ import processing.opengl.*;
 import processing.core.*;
 
 
-public class POSIT_demo extends PApplet {
+public class CopyOfInterface extends PApplet {
 
-	Position view;
+	Plan pa, pb, pc;
+	
+	Position view = new Position(Matrix.identity(3,3), new Pt3(0,0, 100));
 	
 	Matrix A, dist_coeffs;
 	
 	Point windowDim = new Point(1024,768);
 	
-	boolean coplanar_demo = false;
-	boolean init_before   = true;
 	
 	static boolean WITH_PTS = true, NO_PTS = false;
 	
@@ -31,21 +31,17 @@ public class POSIT_demo extends PApplet {
 	int mouse_x_;
 	int mouse_y_;
 
-
+//	PGraphicsOpenGL pgl;
+//	GL gl;
 	
-	Position POS, POS0;
-	Stack<Pt3> planApts;
+	//** For test
+		Plan pA, pB, pC;
+		Position POS, POS0;
+		Stack<Pt3> planApts;
 	
 	
 	public void setup() {
-		
-		if (view == null) print("Use z,q,s,d and mouse (clicking) to move in 3D view.\n" +
-								"Use 'r' to launch another randomized demonstration.\n" +
-								"Use 'c' to switch from non-coplanar to coplanar reference points.\n" +
-								"Initial camera position is in blue. Calculated camera position is un red.\n" +
-								"Use 'a' to change camera plotting order (to see when camera are superposed).\n\n\n");
-		
-		view = new Position(Matrix.identity(3,3), new Pt3(0,0, 500));
+
 		view.rotate(0.2, 0.2);
 		view.t = view.t.apply(view.R.inverse());
 		
@@ -54,25 +50,64 @@ public class POSIT_demo extends PApplet {
 		A = Matrix.identity(3,3);
 		A.set(0,0, 750); A.set(1,1, 750); A.set(0,2, windowDim.x/2); A.set(1,2, windowDim.y/2);
 		
+//		/** Test **/
+//		// Points de référence
+//		Stack<Pt3> planApts = new Stack<Pt3>();
+//		planApts.push(new Pt3(0,297,0)); planApts.push(new Pt3(210,297,0)); planApts.push(new Pt3(210,0,0)); planApts.push(new Pt3(0,0,0));
+//		
+//		// Localisation des autres points
+//		Pt3eval p11 = new Pt3eval(), p12 = new Pt3eval(), p13 = new Pt3eval(), p14 = new Pt3eval(), 
+//				p21 = new Pt3eval(), p22 = new Pt3eval(), p23 = new Pt3eval(), p24 = new Pt3eval();
+//		Stack<Pt2> locA = new Stack<Pt2>();
+//		locA.push(new Pt2(419,172)); locA.push(new Pt2(633,217)); locA.push(new Pt2(618,456)); locA.push(new Pt2(436,409)); 
+//		Position POS = new Position(locA, planApts, A, null);
+//		p11.add(new Pt2( 51,225), POS); p12.add(new Pt2(247,188), POS); p13.add(new Pt2(288,395), POS); p14.add(new Pt2(121,429),POS); 
+//		p21.add(new Pt2(826,277), POS); p22.add(new Pt2(949,423), POS); p23.add(new Pt2(782,499), POS); p24.add(new Pt2(874,643),POS); 
+//		locA = new Stack<Pt2>();
+//		locA.push(new Pt2(404,217)); locA.push(new Pt2(628,178)); locA.push(new Pt2(607,397)); locA.push(new Pt2(421,435)); 
+//		POS = new Position(locA, planApts, A, null);
+//		p11.add(new Pt2( 52,435), POS); p12.add(new Pt2(228,302), POS); p13.add(new Pt2(272,495), POS); p14.add(new Pt2(134,617),POS); 
+//		p21.add(new Pt2(801,169), POS); p22.add(new Pt2(985,249), POS); p23.add(new Pt2(904,444), POS); p24.add(new Pt2(754,368),POS);
+//		// Création des plans
+//		pA = new Plan(planApts, loadImage("bookcovers2.png"), locA);
+//		planApts = new Stack<Pt3>(); locA = new Stack<Pt2>();
+//		planApts.push(p11.p); planApts.push(p12.p); planApts.push(p13.p); planApts.push(p14.p);
+//		locA.push(new Pt2( 51,225)); locA.push(new Pt2(247,188)); locA.push(new Pt2(288,395)); locA.push(new Pt2(121,429));
+//		pB = new Plan(planApts, loadImage("bookcovers1.png"), locA);
+//		planApts = new Stack<Pt3>(); locA = new Stack<Pt2>();
+//		planApts.push(p21.p); planApts.push(p22.p); planApts.push(p23.p); planApts.push(p24.p);
+//		locA.push(new Pt2(801,169)); locA.push(new Pt2(985,249)); locA.push(new Pt2(904,444)); locA.push(new Pt2(754,368));
+//		pC = new Plan(planApts, loadImage("bookcovers2.png"), locA);
+//		
+//		System.out.println("pA >>>>  "+pA.corners3d);
+//		System.out.println("pB >>>>  "+pB.corners3d);
+//		System.out.println("pC >>>>  "+pC.corners3d);
+		
+		
 		planApts = new Stack<Pt3>();
 		Stack<Pt2> seen = new Stack<Pt2>();
-		if (coplanar_demo)
-			for (int k = 0; k < 20; k++) { double az = Math.random(); planApts.push(new Pt3(60*(Math.random()-0.5),60*(az-0.5),10*(az-0.5)));}
-		else
-			for (int k = 0; k < 20; k++) planApts.push(new Pt3(60*(Math.random()-0.5),60*(Math.random()-0.5),60*Math.random()));
+		for (int k = 0; k < 20; k++) { double az = Math.random(); planApts.push(new Pt3(60*(Math.random()-0.5),60*(az-0.5),10*(az-0.5)));}
+//		for (int k = 0; k < 20; k++) planApts.push(new Pt3(60*(Math.random()-0.5),60*(Math.random()-0.5),0));
+//		for (int k = 0; k < 20; k++) planApts.push(new Pt3(60*(Math.random()-0.5),60*(Math.random()-0.5),60*Math.random()));
 		for (Pt3 p : planApts) seen.push(p.toPt2Im(view, A));
 		
-		POS0 = new Position(view.R, view.t);
-		POS = new Position(seen, planApts, A, null);
+		view.R.print(5, 5); System.out.println(view.t+"\n");
 		
-		print("==============================\n\n\n");
-		print("Original values (R, t):");
-		POS0.R.print(10,5); print(view.t + "\n\n\n");
-		print("Found values (R, t):");
-		POS.R.print(10,5);  print(POS.t + "\n\n\n");
+		System.out.println((new Pt3(4,3,1)) + "  ->  " + (new Pt3(4,3,1).toPt2Im(view, A)));
+		
+//		Stack<Pt2> seen_ = new Stack<Pt2>();
+//		while (!seen.isEmpty()) seen_.push(seen.pop());
+//		seen = seen_;
+//		println(seen);
+
+		POS = new Position(seen, planApts, A, null);
+		view.R.print(5,5); print(view.t + "\n\n");
+		POS.R.print(5,5);  print(POS.t + "\n\n");
+		POS.R.inverse().print(5,5);  print(POS.t + "\n\n");
+		POS0 = new Position(view.R, view.t);
 
 		/** Window **/
-		size(windowDim.x,windowDim.y);
+		size(1024,768);
 		plot();
 	}
 	
@@ -91,23 +126,53 @@ public class POSIT_demo extends PApplet {
 		plot(new Pt3( 0, 0, 1));
 		
 		fill(color(0xFFFF0000)); stroke(color(0xFFFF0000));
+		// plot(planApts);
 		for (Pt3 p : planApts) plot(p);
-		if (init_before) {
-			plot(POS0,0xFF0000FF);
-			plot(POS);
-		} else {
-			plot(POS);
-			plot(POS0,0xFF0000FF);
-		}
+		plot(POS0,0xFF0000FF);
+		plot(POS); 
+//		fill(color(0xFF0000FF)); stroke(color(0xFF0000FF));
+//		for (Pt3 p : planApts) {
+//			plot(new Drt3(p,p.toPt2Im(POS0, A).toPt3().apply(A.times(POS0.R).inverse()).times(-1)));
+//		}
+//
+//		fill(color(0xFFFF0000)); stroke(color(0xFFFF0000));
 		fill(color(0xFF000000)); stroke(color(0xFF000000));
 		Stack<Drt3> drts = new Stack<Drt3>();
 		for (Pt3 p : planApts) {
+//			System.out.println(p.toPt2Im(POS0, A));
+//			
 			Drt3 d = new Drt3(p,p.toPt2Im(POS0, A).toPt3().apply(A.times( POS.R).inverse()).times(-1));
 			drts.push(d);
 			plot(d);
 		}
+		fill(color(0xFFFF0000)); stroke(color(0xFFFF0000));
+		plot(new Pt3eval(drts).p);
+		
+		
+//		fill(color(0xFF0000FF)); stroke(color(0xFF0000FF));
+//		plot(new Pt3( 1, 1,-1));
+//		plot(new Pt3( 1,-1, 1));
+//		plot(new Pt3( 1,-1,-1));
+//		plot(new Pt3(-1, 1, 1));
+//		plot(new Pt3(-1, 1,-1));
+//		plot(new Pt3(-1,-1, 1));
+//		plot(new Pt3(-1,-1,-1));
 //		fill(color(0xFFFF0000)); stroke(color(0xFFFF0000));
-//		plot(new Pt3eval(drts).p);		
+//		plot(new Pt3( 1, 1, 1));
+		
+//		image(pA.toPlot(view, A, windowDim),0,0);
+//		image(pB.toPlot(view, A, windowDim),0,0);
+//		image(pC.toPlot(view, A, windowDim),0,0);
+		
+//		fill(color(0xFFFF0000)); stroke(color(0xFFFF0000));
+//		plot(pA.corners3d);
+//		fill(color(0xFF00FF00)); stroke(color(0xFF00FF00));
+//		plot(pB.corners3d);
+//		fill(color(0xFF0000FF)); stroke(color(0xFF0000FF));
+//		plot(pC.corners3d);
+//		
+//		print("Plotted\n");
+		
 	}
 
 	
@@ -128,8 +193,6 @@ public class POSIT_demo extends PApplet {
 			case '+' : dt += 0.1; break;
 			case '-' : if (dt > 0.1) dt -= 0.1; break;
 			case 'r' : setup(); break;
-			case 'c' : coplanar_demo = !coplanar_demo; setup(); break;
-			case 'a' : init_before = !init_before; break;
 		}
 		plot();
 	}

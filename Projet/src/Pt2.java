@@ -56,5 +56,22 @@ public class Pt2 {
 	
 	public double dist2(Pt2 p) { return ((x-p.x)*(x-p.x)+(y-p.y)*(y-p.y)); }
 	
+	public Pt2 plus(Pt2 p) {
+		return new Pt2(x+p.x, y+p.y);
+	}
+
+	public Pt2 minus(Pt2 p) {
+		return new Pt2(x-p.x, y-p.y);
+	}
+	
+	public Pt2 times(double d) {
+		return new Pt2(x*d, y*d);
+	}
+	
+	public Pt2 apply(Matrix M) {    // Return MX, where X is the vertical matrix representing the Pts3.
+		return new Pt2( M.get(0,0)*x + M.get(0,1)*y ,
+	 					M.get(1,0)*x + M.get(1,1)*y );
+	}
+
 
 }

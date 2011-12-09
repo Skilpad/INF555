@@ -14,14 +14,12 @@ import processing.core.*;
 
 public class Interface extends PApplet {
 
-	Plan pa, pb, pc;
-	
-	Position view = new Position(Matrix.identity(3,3), new Pt3(0,0, 100));
-	
+	Position view = new Position(Matrix.identity(3,3), new Pt3(2,2, 500));
+
 	Matrix A, dist_coeffs;
 	
 	Point windowDim = new Point(1024,768);
-	
+
 	
 	static boolean WITH_PTS = true, NO_PTS = false;
 	
@@ -30,149 +28,54 @@ public class Interface extends PApplet {
 	double dt = 10;
 	int mouse_x_;
 	int mouse_y_;
-
-//	PGraphicsOpenGL pgl;
-//	GL gl;
 	
-	//** For test
-		Plan pA, pB, pC;
-		Position POS, POS0;
-		Stack<Pt3> planApts;
+	
+	
+	// Data
+	int               nImgs = 0;
+	Image[]           imgs  = new Image[10];
+	Stack<Pt_corresp> pts   = new Stack<Pt_corresp>();
+	int               iImg  = -1;
+	Pt_corresp        ptSel = null;
+
+	
 	
 	
 	public void setup() {
-
-		view.rotate(0.2, 0.2);
-		view.t = view.t.apply(view.R.inverse());
 		
 		/** Constants & Variables initialization **/
 		// Camera calibration
 		A = Matrix.identity(3,3);
 		A.set(0,0, 750); A.set(1,1, 750); A.set(0,2, windowDim.x/2); A.set(1,2, windowDim.y/2);
-		
-//		/** Test **/
-//		// Points de référence
-//		Stack<Pt3> planApts = new Stack<Pt3>();
-//		planApts.push(new Pt3(0,297,0)); planApts.push(new Pt3(210,297,0)); planApts.push(new Pt3(210,0,0)); planApts.push(new Pt3(0,0,0));
-//		
-//		// Localisation des autres points
-//		Pt3eval p11 = new Pt3eval(), p12 = new Pt3eval(), p13 = new Pt3eval(), p14 = new Pt3eval(), 
-//				p21 = new Pt3eval(), p22 = new Pt3eval(), p23 = new Pt3eval(), p24 = new Pt3eval();
-//		Stack<Pt2> locA = new Stack<Pt2>();
-//		locA.push(new Pt2(419,172)); locA.push(new Pt2(633,217)); locA.push(new Pt2(618,456)); locA.push(new Pt2(436,409)); 
-//		Position POS = new Position(locA, planApts, A, null);
-//		p11.add(new Pt2( 51,225), POS); p12.add(new Pt2(247,188), POS); p13.add(new Pt2(288,395), POS); p14.add(new Pt2(121,429),POS); 
-//		p21.add(new Pt2(826,277), POS); p22.add(new Pt2(949,423), POS); p23.add(new Pt2(782,499), POS); p24.add(new Pt2(874,643),POS); 
-//		locA = new Stack<Pt2>();
-//		locA.push(new Pt2(404,217)); locA.push(new Pt2(628,178)); locA.push(new Pt2(607,397)); locA.push(new Pt2(421,435)); 
-//		POS = new Position(locA, planApts, A, null);
-//		p11.add(new Pt2( 52,435), POS); p12.add(new Pt2(228,302), POS); p13.add(new Pt2(272,495), POS); p14.add(new Pt2(134,617),POS); 
-//		p21.add(new Pt2(801,169), POS); p22.add(new Pt2(985,249), POS); p23.add(new Pt2(904,444), POS); p24.add(new Pt2(754,368),POS);
-//		// Création des plans
-//		pA = new Plan(planApts, loadImage("bookcovers2.png"), locA);
-//		planApts = new Stack<Pt3>(); locA = new Stack<Pt2>();
-//		planApts.push(p11.p); planApts.push(p12.p); planApts.push(p13.p); planApts.push(p14.p);
-//		locA.push(new Pt2( 51,225)); locA.push(new Pt2(247,188)); locA.push(new Pt2(288,395)); locA.push(new Pt2(121,429));
-//		pB = new Plan(planApts, loadImage("bookcovers1.png"), locA);
-//		planApts = new Stack<Pt3>(); locA = new Stack<Pt2>();
-//		planApts.push(p21.p); planApts.push(p22.p); planApts.push(p23.p); planApts.push(p24.p);
-//		locA.push(new Pt2(801,169)); locA.push(new Pt2(985,249)); locA.push(new Pt2(904,444)); locA.push(new Pt2(754,368));
-//		pC = new Plan(planApts, loadImage("bookcovers2.png"), locA);
-//		
-//		System.out.println("pA >>>>  "+pA.corners3d);
-//		System.out.println("pB >>>>  "+pB.corners3d);
-//		System.out.println("pC >>>>  "+pC.corners3d);
-		
-		
-		planApts = new Stack<Pt3>();
-		Stack<Pt2> seen = new Stack<Pt2>();
-		for (int k = 0; k < 20; k++) { double az = Math.random(); planApts.push(new Pt3(60*(Math.random()-0.5),60*(az-0.5),10*(az-0.5)));}
-//		for (int k = 0; k < 20; k++) planApts.push(new Pt3(60*(Math.random()-0.5),60*(Math.random()-0.5),0));
-//		for (int k = 0; k < 20; k++) planApts.push(new Pt3(60*(Math.random()-0.5),60*(Math.random()-0.5),60*Math.random()));
-		for (Pt3 p : planApts) seen.push(p.toPt2Im(view, A));
-		
-		view.R.print(5, 5); System.out.println(view.t+"\n");
-		
-		System.out.println((new Pt3(4,3,1)) + "  ->  " + (new Pt3(4,3,1).toPt2Im(view, A)));
-		
-//		Stack<Pt2> seen_ = new Stack<Pt2>();
-//		while (!seen.isEmpty()) seen_.push(seen.pop());
-//		seen = seen_;
-//		println(seen);
-
-		POS = new Position(seen, planApts, A, null);
-		view.R.print(5,5); print(view.t + "\n\n");
-		POS.R.print(5,5);  print(POS.t + "\n\n");
-		POS.R.inverse().print(5,5);  print(POS.t + "\n\n");
-		POS0 = new Position(view.R, view.t);
 
 		/** Window **/
-		size(1024,768);
+		size(windowDim.x,windowDim.y);
 		plot();
 	}
 	
 	public void draw() {}
 	
 	public void plot() {
-		background(0xFFFFFFFF);
-		fill(color(0xFF0000FF)); stroke(color(0xFF0000FF));
-		plot(new Drt3(new Pt3(0,0,0), new Pt3(1,0,0)));
-		plot(new Pt3( 1, 0, 0));
-		fill(color(0xFFFF0000)); stroke(color(0xFFFF0000));
-		plot(new Drt3(new Pt3(0,0,0), new Pt3(0,1,0)));
-		plot(new Pt3( 0, 1, 0));
-		fill(color(0xFF00FF00)); stroke(color(0xFF00FF00));
-		plot(new Drt3(new Pt3(0,0,0), new Pt3(0,0,1)));
-		plot(new Pt3( 0, 0, 1));
-		
-		fill(color(0xFFFF0000)); stroke(color(0xFFFF0000));
-		// plot(planApts);
-		for (Pt3 p : planApts) plot(p);
-		plot(POS0,0xFF0000FF);
-		plot(POS); 
-//		fill(color(0xFF0000FF)); stroke(color(0xFF0000FF));
-//		for (Pt3 p : planApts) {
-//			plot(new Drt3(p,p.toPt2Im(POS0, A).toPt3().apply(A.times(POS0.R).inverse()).times(-1)));
-//		}
-//
-//		fill(color(0xFFFF0000)); stroke(color(0xFFFF0000));
-		fill(color(0xFF000000)); stroke(color(0xFF000000));
-		Stack<Drt3> drts = new Stack<Drt3>();
-		for (Pt3 p : planApts) {
-//			System.out.println(p.toPt2Im(POS0, A));
-//			
-			Drt3 d = new Drt3(p,p.toPt2Im(POS0, A).toPt3().apply(A.times( POS.R).inverse()).times(-1));
-			drts.push(d);
-			plot(d);
+		if (iImg < 0) {
+			// TODO
+			background(0xFFFFFFFF);
+			fill(color(0xFF0000FF)); stroke(color(0xFF0000FF));
+			plot(new Drt3(new Pt3(0,0,0), new Pt3(1,0,0)));
+			plot(new Pt3( 1, 0, 0));
+			fill(color(0xFFFF0000)); stroke(color(0xFFFF0000));
+			plot(new Drt3(new Pt3(0,0,0), new Pt3(0,1,0)));
+			plot(new Pt3( 0, 1, 0));
+			fill(color(0xFF00FF00)); stroke(color(0xFF00FF00));
+			plot(new Drt3(new Pt3(0,0,0), new Pt3(0,0,1)));
+			plot(new Pt3( 0, 0, 1));
+			
+			fill(color(0xFF0000FF)); stroke(color(0xFF0000FF));
+			for (Pt_corresp p : pts) plot(p.pt3());
+			
+		} else {
+			background(0xFF000000);
+			plot(imgs[iImg]);
 		}
-		fill(color(0xFFFF0000)); stroke(color(0xFFFF0000));
-		plot(new Pt3eval(drts).p);
-		
-		
-//		fill(color(0xFF0000FF)); stroke(color(0xFF0000FF));
-//		plot(new Pt3( 1, 1,-1));
-//		plot(new Pt3( 1,-1, 1));
-//		plot(new Pt3( 1,-1,-1));
-//		plot(new Pt3(-1, 1, 1));
-//		plot(new Pt3(-1, 1,-1));
-//		plot(new Pt3(-1,-1, 1));
-//		plot(new Pt3(-1,-1,-1));
-//		fill(color(0xFFFF0000)); stroke(color(0xFFFF0000));
-//		plot(new Pt3( 1, 1, 1));
-		
-//		image(pA.toPlot(view, A, windowDim),0,0);
-//		image(pB.toPlot(view, A, windowDim),0,0);
-//		image(pC.toPlot(view, A, windowDim),0,0);
-		
-//		fill(color(0xFFFF0000)); stroke(color(0xFFFF0000));
-//		plot(pA.corners3d);
-//		fill(color(0xFF00FF00)); stroke(color(0xFF00FF00));
-//		plot(pB.corners3d);
-//		fill(color(0xFF0000FF)); stroke(color(0xFF0000FF));
-//		plot(pC.corners3d);
-//		
-//		print("Plotted\n");
-		
 	}
 
 	
@@ -186,19 +89,19 @@ public class Interface extends PApplet {
 
 	public void keyPressed() {
 		switch (key) {
-			case 'z' : view.moveForward( dt); break;
-			case 's' : view.moveForward(-dt); break;
-			case 'd' : view.moveRight( dt); break;
-			case 'q' : view.moveRight(-dt); break;
-			case '+' : dt += 0.1; break;
-			case '-' : if (dt > 0.1) dt -= 0.1; break;
-			case 'r' : setup(); break;
+			case 'z' : if (iImg < 0) view.moveForward( dt); break;
+			case 's' : if (iImg < 0) view.moveForward(-dt); break;
+			case 'd' : if (iImg < 0) view.moveRight( dt); break;
+			case 'q' : if (iImg < 0) view.moveRight(-dt); break;
+			case 'l' : openF(); break;
+			case 'a' : iImg = (iImg == -1)      ? (nImgs-1) : (iImg-1); break;
+			case 'e' : iImg = (iImg == nImgs-1) ? (-1)      : (iImg+1); break;
 		}
 		plot();
 	}
 
 	public void mouseDragged() {
-		view.rotate( (double) (mouseY - mouse_y_)*da/30 ,  (double) (mouseX - mouse_x_)*da/30 );
+		if (iImg < 0) view.rotate( (double) (mouseY - mouse_y_)*da/30 ,  (double) (mouseX - mouse_x_)*da/30 );
 		mouseMoved();
 		plot();
 	}
@@ -207,7 +110,17 @@ public class Interface extends PApplet {
 		mouse_x_ = mouseX; mouse_y_ = mouseY;
 	}
 	
-	
+	public void mouseClicked() {
+		if (mouseButton == LEFT) {
+			if (!selectPt(new Pt2(mouseX, mouseY)) && iImg >= 0) {
+				Pt_corresp pc = new Pt_corresp();
+				pc.add(new Pt_in_img(new Pt2(mouseX,mouseY), imgs[iImg]));
+				pts.push(pc);
+				ptSel = pc;
+			}
+		}
+		plot();
+	}
 	
 	
 	
@@ -226,10 +139,6 @@ public class Interface extends PApplet {
 		plot(p.toPt2Im(view, A));
 	}
 	
-	public void plot(Stack<Pt3> P) {
-		plot(P, WITH_PTS);
-	}
-	
 	public void plot(Stack<Pt3> P, boolean pts) {
 		Pt3 p_last = null;
 		Pt3 p_0    = null;
@@ -242,6 +151,14 @@ public class Interface extends PApplet {
 		plot(p_last, p_0);
 	}
 	
+	public void plot(Pt_corresp p) {
+		plot(p.pt3());
+	}
+	
+	public void plot(Stack<Pt_corresp> P) {
+		for (Pt_corresp p : P) plot(p);
+	}
+	
 	public void plot(Pt2 a, Pt2 b) {
 		if (a == null || b == null) return;
 		line((float) a.x,(float) a.y, (float) b.x, (float) b.y);
@@ -250,6 +167,10 @@ public class Interface extends PApplet {
 	public void plot(Pt3 a, Pt3 b) {
 		if (a == null || b == null) return;
 		plot(a.toPt2Im(view, A), b.toPt2Im(view, A));
+	}
+	
+	public void plot(Pt_corresp a, Pt_corresp b) {
+		plot(a.pt3(), b.pt3());
 	}
 	
 	public void plot(Drt3 d) {
@@ -302,5 +223,71 @@ public class Interface extends PApplet {
 		fill(color(0xFFFFFFFF));
 		plot(p1); plot(p2); plot(p3); plot(p4);
 	}
+
+	public void plot(Image img) {
+		image(img.img, 0,0);
+		fill(0xFFFF0000); stroke(0xFFFF0000);
+		for (Pt2 p : img.pts2) plot(p);
+		fill(0xFF00FF00); stroke(0xFF00FF00);
+		if (ptSel != null) plot(ptSel.pt2_in_img(img));
+	}
+	
+	
+	
+	
+/*******************
+ **     Files     **
+ *******************/
+		
+		
+
+	private void openF() {
+		String f = selectInput();
+		if (f != null) {
+			if (nImgs == imgs.length) {
+				Image[] imgs_ = new Image[nImgs+10];
+				for (int i = 0; i < nImgs; i++) imgs_[i] = imgs[i];
+				imgs = imgs_;
+			}
+			imgs[nImgs] = new Image(loadImage(f), A, dist_coeffs);
+			iImg = nImgs;
+			nImgs++;
+		}
+	}
+	
+	
+	
+
+/**********************
+ **   Select Point   **
+ **********************/
+	
+	
+	
+	private boolean selectPt(Pt2 s) {
+		Pt_corresp selP = null;
+		if (iImg < 0) {
+			// TODO
+		} else {
+			Image img = imgs[iImg];
+			for (Pt_corresp p : pts) { 
+				println((img == null) ? "!!!img" : (p == null) ? "!!!p" : (s == null) ? "!!!p" : "###"); 
+				if (p.pt2_in_img(img).dist2(s) < 25) { 
+					println("~~~~~"); 
+					selP = p; 
+					break; } 
+				println(" ~~~ "); 
+				}
+		}
+		println(">-<"); 		
+		if (selP == null) return false;
+		ptSel = (selP == ptSel) ? null : selP;
+		return true;
+	}
+	
+	
+
 	
 }
+
+
