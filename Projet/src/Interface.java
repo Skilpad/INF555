@@ -17,6 +17,7 @@ public class Interface extends PApplet {
 	Position view = new Position(Matrix.identity(3,3), new Pt3(2,2, 500));
 
 	Matrix A, dist_coeffs;
+	double px = 512, py = 384, f = 929;
 	
 	Point windowDim = new Point(1024,768);
 
@@ -41,14 +42,16 @@ public class Interface extends PApplet {
 	
 	
 	
+	
 	public void setup() {
 		
 		/**  Constants & Variables initialization  **/
 		// Camera calibration
 		A = Matrix.identity(3,3);
-		A.set(0,0, 750); A.set(1,1, 750); A.set(0,2, windowDim.x/2); A.set(1,2, windowDim.y/2);
+		A.set(0,0, f); A.set(1,1, f); A.set(0,2, px); A.set(1,2, py);
 		
 		/**  Reference points **/
+		
 		pts.add(new Pt_corresp(new Pt3(  0,  0,0)));
 		pts.add(new Pt_corresp(new Pt3(100,  0,0)));
 		pts.add(new Pt_corresp(new Pt3(  0,100,0)));
@@ -79,9 +82,14 @@ public class Interface extends PApplet {
 			for (Pt_corresp p : pts) plot(p.pt3());
 			if (ptSel != null) { fill(color(0xFF00FF00)); stroke(color(0xFF00FF00)); plot(ptSel.pt3()); }
 			
-			for (Image img : imgs) if (img != null && img.pos != null) plot(img.pos);
+			for (Image img : imgs) if (img != null  && img.pos != null) plot(img.pos);
 			if (ptSel != null) {
-				try { for (Drt3 d : ptSel.pt.drt) plot(d); } catch(Error r) {}
+				if (ptSel.pt.known)
+					for (Pt_in_img pii : ptSel.pt2_list) 
+						if (pii.img.pos != null)
+							plot(new Drt3(pii.pt, pii.img.pos, pii.img.A)); 
+				else
+					try { for (Drt3 d : ptSel.pt.drt) plot(d); } catch(Error r) {}
 			}
 			
 		} else {

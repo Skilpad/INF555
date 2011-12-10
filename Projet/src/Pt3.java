@@ -133,6 +133,9 @@ public class Pt3 {
 						M.get(2,0)*x + M.get(2,1)*y + M.get(2,2)*z );
 	}
 	
+	public double scal(Pt3 p) {
+		return x*p.x + y*p.y + z*p.z;
+	}
 
 	
 }

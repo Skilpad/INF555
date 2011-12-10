@@ -3,8 +3,8 @@ import java.util.Stack;
 
 public class Pt_corresp {
 
-	public Pt3eval           pt;
-	private Stack<Pt_in_img> pt2_list;
+	public Pt3eval          pt;
+	public Stack<Pt_in_img> pt2_list;
 	
 	private double threshold = 0.0000001;
 	
@@ -31,11 +31,13 @@ public class Pt_corresp {
 			this.update();
 		if (pt.p == null) return;
 		double d2 = Double.POSITIVE_INFINITY;
+		int cnt = 0;
 		while (d2 > threshold) {
 			Pt3 p_ = pt.p;
 			p.img.update();
 			this.update();
 			d2 = (pt == null || pt.p == null || p.img == null) ? 0 : pt.p.dist2(p_);
+			if (cnt++ == 1000) break;
 		}
 	}
 	
@@ -51,7 +53,7 @@ public class Pt_corresp {
 		if (pt.known) return;
 		if (pt2_list.size() < 2) { pt = new Pt3eval(); return; }
 		Stack<Drt3> drts = new Stack<Drt3>();
-		for (Pt_in_img p : pt2_list) if (p.img.pos != null) drts.push(new Drt3(p.pt, p.img.pos));
+		for (Pt_in_img p : pt2_list) if (p.img.pos != null) drts.push(new Drt3(p.pt, p.img.pos, p.img.A));
 		pt = new Pt3eval(drts);
 	}
 	
@@ -71,6 +73,10 @@ public class Pt_corresp {
 	
 	public boolean isEmpty() {
 		return pt2_list.isEmpty();
+	}
+	
+	public boolean known() {
+		return pt.known;
 	}
 	
 }

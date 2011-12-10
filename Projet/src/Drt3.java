@@ -19,6 +19,13 @@ public class Drt3 {
 		this.M = pos.t.apply(Rinv).times(-1);
 		this.v = p.toPt3().apply(Rinv).rescaled();
 	}
+	
+	public Drt3(Pt2 p, Position pos, Matrix A) {
+		Matrix Rinv = pos.R.inverse();
+		this.M = pos.t.apply(Rinv).times(-1);
+		this.v = p.toPt3().apply(A.inverse()).apply(Rinv).rescaled();
+	}
+
 
 	
 /**********************
