@@ -16,10 +16,10 @@ public class Image {
 	public Matrix A, dist_coeffs;
 	
 	public Image(PImage img, Matrix A, Matrix dist_coeffs) {
-		this.img = img;
+		this.img  = img;
 		this.pts3 = new Stack<Pt_corresp>();
 		this.pts2 = new Stack<Pt2>();
-		this.pos = null;
+		this.pos  = null;
 		this.A 			 = A;
 		this.dist_coeffs = dist_coeffs;
 	}
@@ -41,6 +41,22 @@ public class Image {
 		}
 		if (n<4)  pos = null;
 		else	  pos = new Position(pts2_, pts3_, A, dist_coeffs);
+	}
+	
+	public void forget_pt(Pt_corresp p) {
+		Stack<Pt_corresp> pts3_ = new Stack<Pt_corresp>();
+		Stack<Pt2>    	  pts2_ = new Stack<Pt2>();		
+		Iterator<Pt2> p2 = pts2.iterator();
+		for (Pt_corresp p_ : pts3) {
+			if (p_ == p) {
+				p2.next();
+			} else {
+				pts2_.push(p2.next());
+				pts3_.push(p_);
+			}
+		}
+		pts2 = pts2_;
+		pts3 = pts3_;
 	}
 	
 }

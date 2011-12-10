@@ -18,6 +18,10 @@ public class Pt2 {
 		this.x = p.x/p.z; this.y = p.y/p.z;
 	}
 	
+	public Pt2(Pt2 p) {
+		this.x = p.x; this.y = p.y;
+	}
+	
 	
 /**********************
  *      Converter     *

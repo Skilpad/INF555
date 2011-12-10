@@ -3,13 +3,18 @@ import java.util.Stack;
 
 public class Pt_corresp {
 
-	private Pt3eval          pt;
+	public Pt3eval           pt;
 	private Stack<Pt_in_img> pt2_list;
 	
 	private double threshold = 0.0000001;
 	
 	public Pt_corresp() {
 		pt = new Pt3eval();
+		pt2_list = new Stack<Pt_in_img>();
+	}
+	
+	public Pt_corresp(Pt3 p) {
+		this.pt = new Pt3eval(p);
 		pt2_list = new Stack<Pt_in_img>();
 	}
 	
@@ -22,7 +27,8 @@ public class Pt_corresp {
 		pt2_list.push(p);
 		p.img.pts2.push(p.pt);
 		p.img.pts3.push(this);
-		if (pt.nbDrt() < pt2_list.size()) this.update();
+//		if (pt.nbDrt() < pt2_list.size()) 
+			this.update();
 		if (pt.p == null) return;
 		double d2 = Double.POSITIVE_INFINITY;
 		while (d2 > threshold) {
@@ -33,21 +39,38 @@ public class Pt_corresp {
 		}
 	}
 	
+	public void delete_from_img(Image img) {
+		Stack<Pt_in_img> new_list = new Stack<Pt_in_img>();
+		for (Pt_in_img p : pt2_list)
+			if (p.img == img)   img.forget_pt(this);
+			else                new_list.push(p);
+		pt2_list = new_list;
+	}
+	
 	public void update() {
+		if (pt.known) return;
 		if (pt2_list.size() < 2) { pt = new Pt3eval(); return; }
 		Stack<Drt3> drts = new Stack<Drt3>();
 		for (Pt_in_img p : pt2_list) if (p.img.pos != null) drts.push(new Drt3(p.pt, p.img.pos));
 		pt = new Pt3eval(drts);
 	}
 	
-	public Pt2 pt2_in_img(Image img) {
-		System.out.println("<->");
-		if (pt2_list == null) 
-				System.out.println("<!>");
-		for (Pt_in_img p : pt2_list) 
-			if (p.img == img) 
-				return p.pt;
+	public Pt_in_img pt_in_img(Image img) {
+		for (Pt_in_img p : pt2_list) if (p.img == img) return p;
 		return null;
+	}
+	
+	public Pt2 pt2_in_img(Image img) {
+		for (Pt_in_img p : pt2_list) if (p.img == img) return p.pt;
+		return null;
+	}
+	
+	public int nbPts() {
+		return pt2_list.size();
+	}
+	
+	public boolean isEmpty() {
+		return pt2_list.isEmpty();
 	}
 	
 }

@@ -43,12 +43,18 @@ public class Interface extends PApplet {
 	
 	public void setup() {
 		
-		/** Constants & Variables initialization **/
+		/**  Constants & Variables initialization  **/
 		// Camera calibration
 		A = Matrix.identity(3,3);
 		A.set(0,0, 750); A.set(1,1, 750); A.set(0,2, windowDim.x/2); A.set(1,2, windowDim.y/2);
-
-		/** Window **/
+		
+		/**  Reference points **/
+		pts.add(new Pt_corresp(new Pt3(  0,  0,0)));
+		pts.add(new Pt_corresp(new Pt3(100,  0,0)));
+		pts.add(new Pt_corresp(new Pt3(  0,100,0)));
+		pts.add(new Pt_corresp(new Pt3(100,100,0)));
+		
+		/**  Window  **/
 		size(windowDim.x,windowDim.y);
 		plot();
 	}
@@ -69,8 +75,14 @@ public class Interface extends PApplet {
 			plot(new Drt3(new Pt3(0,0,0), new Pt3(0,0,1)));
 			plot(new Pt3( 0, 0, 1));
 			
-			fill(color(0xFF0000FF)); stroke(color(0xFF0000FF));
+			fill(color(0xFFFF0000)); stroke(color(0xFFFF0000));
 			for (Pt_corresp p : pts) plot(p.pt3());
+			if (ptSel != null) { fill(color(0xFF00FF00)); stroke(color(0xFF00FF00)); plot(ptSel.pt3()); }
+			
+			for (Image img : imgs) if (img != null && img.pos != null) plot(img.pos);
+			if (ptSel != null) {
+				try { for (Drt3 d : ptSel.pt.drt) plot(d); } catch(Error r) {}
+			}
 			
 		} else {
 			background(0xFF000000);
@@ -94,8 +106,10 @@ public class Interface extends PApplet {
 			case 'd' : if (iImg < 0) view.moveRight( dt); break;
 			case 'q' : if (iImg < 0) view.moveRight(-dt); break;
 			case 'l' : openF(); break;
+			case ' ' : openF(); break;
 			case 'a' : iImg = (iImg == -1)      ? (nImgs-1) : (iImg-1); break;
 			case 'e' : iImg = (iImg == nImgs-1) ? (-1)      : (iImg+1); break;
+			case 'x' : delete_from_img(); break;
 		}
 		plot();
 	}
@@ -111,13 +125,45 @@ public class Interface extends PApplet {
 	}
 	
 	public void mouseClicked() {
-		if (mouseButton == LEFT) {
-			if (!selectPt(new Pt2(mouseX, mouseY)) && iImg >= 0) {
-				Pt_corresp pc = new Pt_corresp();
-				pc.add(new Pt_in_img(new Pt2(mouseX,mouseY), imgs[iImg]));
-				pts.push(pc);
-				ptSel = pc;
-			}
+		switch (mouseButton) {
+			case RIGHT:   // Select Point
+				Pt2 here = new Pt2(mouseX,mouseY);
+				if (iImg < 0) {
+					double d2 = Double.POSITIVE_INFINITY;
+					for (Pt_corresp p : pts) {
+						Pt3 p3 = p.pt3();
+						if (p3 == null) continue;
+						Pt2 p_ = p3.toPt2Im(view, A);
+						if (p_ == null) continue;
+						double d2_ = p_.dist2(here);
+						if (d2_ < d2) { d2 = d2_; ptSel = p; }
+					}
+				} else {
+					double d2 = Double.POSITIVE_INFINITY;
+					for (Pt_corresp p : pts) {
+						Pt2 p_ = p.pt2_in_img(imgs[iImg]);
+						if (p_ == null) continue;
+						double d2_ = p_.dist2(here);
+						if (d2_ < d2) { d2 = d2_; ptSel = p; }
+					}
+				}
+				break;
+			case LEFT:    // Add a new Pt_in_img to the select Pt_corresp				
+				if (iImg < 0) return;
+				if (ptSel == null) return;
+				Pt_in_img p = ptSel.pt_in_img(imgs[iImg]);
+				if (p == null)
+					ptSel.add(new Pt_in_img(new Pt2(mouseX,mouseY), imgs[iImg]));
+				else
+					p.changePt(new Pt2(mouseX,mouseY));
+				break;
+			case CENTER:  // New point
+				if (iImg < 0) return;
+				Pt_corresp p_ = new Pt_corresp();
+				p_.add(new Pt_in_img(new Pt2(mouseX,mouseY), imgs[iImg]));
+				pts.push(p_);
+				ptSel = p_;
+				break;
 		}
 		plot();
 	}
@@ -230,6 +276,8 @@ public class Interface extends PApplet {
 		for (Pt2 p : img.pts2) plot(p);
 		fill(0xFF00FF00); stroke(0xFF00FF00);
 		if (ptSel != null) plot(ptSel.pt2_in_img(img));
+		if (img.pos == null) 
+			{ fill(0x88FF0000); stroke(0x88FF0000); textSize(32); text("Unknow pose", 20, 50); }
 	}
 	
 	
@@ -238,7 +286,6 @@ public class Interface extends PApplet {
 /*******************
  **     Files     **
  *******************/
-		
 		
 
 	private void openF() {
@@ -263,29 +310,16 @@ public class Interface extends PApplet {
  **********************/
 	
 	
-	
-	private boolean selectPt(Pt2 s) {
-		Pt_corresp selP = null;
-		if (iImg < 0) {
-			// TODO
-		} else {
-			Image img = imgs[iImg];
-			for (Pt_corresp p : pts) { 
-				println((img == null) ? "!!!img" : (p == null) ? "!!!p" : (s == null) ? "!!!p" : "###"); 
-				if (p.pt2_in_img(img).dist2(s) < 25) { 
-					println("~~~~~"); 
-					selP = p; 
-					break; } 
-				println(" ~~~ "); 
-				}
+	private void delete_from_img() {
+		if (ptSel == null || iImg < -1) return;
+		ptSel.delete_from_img(imgs[iImg]);
+		if (ptSel.isEmpty()) {
+			Stack<Pt_corresp> pts_ = new Stack<Pt_corresp>();
+			for (Pt_corresp p : pts) if (p != ptSel) pts_.push(p);
+			pts = pts_;
+			ptSel = null;
 		}
-		println(">-<"); 		
-		if (selP == null) return false;
-		ptSel = (selP == ptSel) ? null : selP;
-		return true;
 	}
-	
-	
 
 	
 }
