@@ -38,7 +38,13 @@ public class Interface extends PApplet {
 	Stack<Pt_corresp> pts   = new Stack<Pt_corresp>();
 	int               iImg  = -1;
 	Pt_corresp        ptSel = null;
-
+	
+	Stack<Plan>       plans = new Stack<Plan>();
+	
+	int step = 0;
+	Stack<Pt2> polygone  = null;
+	Stack<Pt3> poly3     = null;
+	Pt_corresp pol_start = null;
 	
 	
 	
@@ -82,15 +88,15 @@ public class Interface extends PApplet {
 			for (Pt_corresp p : pts) plot(p.pt3());
 			if (ptSel != null) { fill(color(0xFF00FF00)); stroke(color(0xFF00FF00)); plot(ptSel.pt3()); }
 			
-			for (Image img : imgs) if (img != null  && img.pos != null) plot(img.pos);
-			if (ptSel != null) {
-				if (ptSel.pt.known)
-					for (Pt_in_img pii : ptSel.pt2_list) 
-						if (pii.img.pos != null)
-							plot(new Drt3(pii.pt, pii.img.pos, pii.img.A)); 
-				else
-					try { for (Drt3 d : ptSel.pt.drt) plot(d); } catch(Error r) {}
-			}
+//			for (Image img : imgs) if (img != null  && img.pos != null) plot(img.pos);
+//			if (ptSel != null) {
+//				if (ptSel.pt.known)
+//					for (Pt_in_img pii : ptSel.pt2_list) 
+//						if (pii.img.pos != null)
+//							plot(new Drt3(pii.pt, pii.img.pos, pii.img.A)); 
+//				else
+//					try { for (Drt3 d : ptSel.pt.drt) plot(d); } catch(Error r) {}
+//			}
 			
 		} else {
 			background(0xFF000000);
@@ -109,15 +115,16 @@ public class Interface extends PApplet {
 
 	public void keyPressed() {
 		switch (key) {
-			case 'z' : if (iImg < 0) view.moveForward( dt); break;
-			case 's' : if (iImg < 0) view.moveForward(-dt); break;
-			case 'd' : if (iImg < 0) view.moveRight( dt); break;
-			case 'q' : if (iImg < 0) view.moveRight(-dt); break;
-			case 'l' : openF(); break;
-			case ' ' : openF(); break;
-			case 'a' : iImg = (iImg == -1)      ? (nImgs-1) : (iImg-1); break;
-			case 'e' : iImg = (iImg == nImgs-1) ? (-1)      : (iImg+1); break;
-			case 'x' : delete_from_img(); break;
+			case 'z'  : if (iImg < 0) view.moveForward( dt); break;
+			case 's'  : if (iImg < 0) view.moveForward(-dt); break;
+			case 'd'  : if (iImg < 0) view.moveRight( dt);   break;
+			case 'q'  : if (iImg < 0) view.moveRight(-dt);   break;
+			case 'l'  : if (step == 0) openF(); break;
+			case ' '  : if (step == 0) openF(); break;
+			case 'a'  : iImg = (iImg == -1)      ? (nImgs-1) : (iImg-1); break;
+			case 'e'  : iImg = (iImg == nImgs-1) ? (-1)      : (iImg+1); break;
+			case 'x'  : delete_from_img(); break;
+			case '\n' : nextStep(); break;
 		}
 		plot();
 	}
@@ -133,44 +140,45 @@ public class Interface extends PApplet {
 	}
 	
 	public void mouseClicked() {
-		switch (mouseButton) {
-			case RIGHT:   // Select Point
-				Pt2 here = new Pt2(mouseX,mouseY);
-				if (iImg < 0) {
-					double d2 = Double.POSITIVE_INFINITY;
-					for (Pt_corresp p : pts) {
-						Pt3 p3 = p.pt3();
-						if (p3 == null) continue;
-						Pt2 p_ = p3.toPt2Im(view, A);
-						if (p_ == null) continue;
-						double d2_ = p_.dist2(here);
-						if (d2_ < d2) { d2 = d2_; ptSel = p; }
-					}
-				} else {
-					double d2 = Double.POSITIVE_INFINITY;
-					for (Pt_corresp p : pts) {
-						Pt2 p_ = p.pt2_in_img(imgs[iImg]);
-						if (p_ == null) continue;
-						double d2_ = p_.dist2(here);
-						if (d2_ < d2) { d2 = d2_; ptSel = p; }
-					}
+		switch (step) {
+			case 0:
+				switch (mouseButton) {
+					case RIGHT:   // Select Point
+						select_point();
+						break;
+					case LEFT:    // Add a new Pt_in_img to the select Pt_corresp
+						if (iImg < 0) return;
+						if (ptSel == null) return;
+						Pt_in_img p = ptSel.pt_in_img(imgs[iImg]);
+						if (p == null)
+							ptSel.add(new Pt_in_img(new Pt2(mouseX,mouseY), imgs[iImg]));
+						else
+							p.changePt(new Pt2(mouseX,mouseY));
+						break;
+					case CENTER:  // New point
+						if (iImg < 0) return;
+						Pt_corresp p_ = new Pt_corresp();
+						p_.add(new Pt_in_img(new Pt2(mouseX,mouseY), imgs[iImg]));
+						pts.push(p_);
+						ptSel = p_;
+						break;
 				}
 				break;
-			case LEFT:    // Add a new Pt_in_img to the select Pt_corresp				
-				if (iImg < 0) return;
-				if (ptSel == null) return;
-				Pt_in_img p = ptSel.pt_in_img(imgs[iImg]);
-				if (p == null)
-					ptSel.add(new Pt_in_img(new Pt2(mouseX,mouseY), imgs[iImg]));
-				else
-					p.changePt(new Pt2(mouseX,mouseY));
-				break;
-			case CENTER:  // New point
-				if (iImg < 0) return;
-				Pt_corresp p_ = new Pt_corresp();
-				p_.add(new Pt_in_img(new Pt2(mouseX,mouseY), imgs[iImg]));
-				pts.push(p_);
-				ptSel = p_;
+			case 1:
+				if (mouseButton != LEFT) return;
+				select_point();
+				if (ptSel == pol_start) {
+					plans.push(new Plan(poly3, imgs[iImg], polygone));
+					polygone = null; poly3 = null; pol_start = null;
+				} else {
+					if (polygone == null) { 
+						polygone = new Stack<Pt2>();
+						poly3    = new Stack<Pt3>();						
+						pol_start = ptSel; 
+					}
+					polygone.push(ptSel.pt2_in_img(imgs[iImg]));
+					poly3.push(ptSel.pt3());
+				}				
 				break;
 		}
 		plot();
@@ -317,18 +325,54 @@ public class Interface extends PApplet {
  **   Select Point   **
  **********************/
 	
-	
-	private void delete_from_img() {
-		if (ptSel == null || iImg < -1) return;
-		ptSel.delete_from_img(imgs[iImg]);
-		if (ptSel.isEmpty()) {
-			Stack<Pt_corresp> pts_ = new Stack<Pt_corresp>();
-			for (Pt_corresp p : pts) if (p != ptSel) pts_.push(p);
-			pts = pts_;
-			ptSel = null;
+
+	private void select_point() {
+		Pt2 here = new Pt2(mouseX,mouseY);
+		if (iImg < 0) {
+			double d2 = Double.POSITIVE_INFINITY;
+			for (Pt_corresp p : pts) {
+				Pt3 p3 = p.pt3();
+				if (p3 == null) continue;
+				Pt2 p_ = p3.toPt2Im(view, A);
+				if (p_ == null) continue;
+				double d2_ = p_.dist2(here);
+				if (d2_ < d2) { d2 = d2_; ptSel = p; }
+			}
+		} else {
+			double d2 = Double.POSITIVE_INFINITY;
+			for (Pt_corresp p : pts) {
+				Pt2 p_ = p.pt2_in_img(imgs[iImg]);
+				if (p_ == null) continue;
+				double d2_ = p_.dist2(here);
+				if (d2_ < d2) { d2 = d2_; ptSel = p; }
+			}
 		}
 	}
-
+	
+	private void delete_from_img() {
+		switch (step) {
+			case 0:
+				if (ptSel == null || iImg < -1) return;
+				ptSel.delete_from_img(imgs[iImg]);
+				if (ptSel.isEmpty()) {
+					Stack<Pt_corresp> pts_ = new Stack<Pt_corresp>();
+					for (Pt_corresp p : pts) if (p != ptSel) pts_.push(p);
+					pts = pts_;
+					ptSel = null;
+				}
+				break;
+			case 1:
+				if (polygone == null) return;
+				polygone.pop(); poly3.pop();
+				if (polygone.isEmpty()) { polygone = null; poly3 = null; pol_start = null; }
+				break;
+		}
+	}
+	
+	private void nextStep() {
+		step++;
+	}
+	
 	
 }
 

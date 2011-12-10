@@ -76,6 +76,10 @@ public class Pt2 {
 		return new Pt2( M.get(0,0)*x + M.get(0,1)*y ,
 	 					M.get(1,0)*x + M.get(1,1)*y );
 	}
+	
+	public double cross(Pt2 p) {
+		return x*p.y - y*p.x;
+	}
 
 
 }
