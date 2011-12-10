@@ -16,7 +16,7 @@ public class Interface extends PApplet {
 
 	Position view = new Position(Matrix.identity(3,3), new Pt3(2,2, 500));
 
-	Matrix A, dist_coeffs;
+	Matrix A, Ainv, dist_coeffs;
 	double px = 512, py = 384, f = 929;
 	
 	Point windowDim = new Point(1024,768);
@@ -39,13 +39,16 @@ public class Interface extends PApplet {
 	int               iImg  = -1;
 	Pt_corresp        ptSel = null;
 	
-	Stack<Plan>       plans = new Stack<Plan>();
+	Stack<Plan>       plans   = new Stack<Plan>();
+	int               n_plans = 0;
 	
 	int step = 0;
 	Stack<Pt2> polygone  = null;
 	Stack<Pt3> poly3     = null;
 	Pt_corresp pol_start = null;
 	
+	boolean textured = true;
+	int LD_size = 15;
 	
 	
 	
@@ -55,6 +58,7 @@ public class Interface extends PApplet {
 		// Camera calibration
 		A = Matrix.identity(3,3);
 		A.set(0,0, f); A.set(1,1, f); A.set(0,2, px); A.set(1,2, py);
+		Ainv = A.inverse();
 		
 		/**  Reference points **/
 		
@@ -71,40 +75,18 @@ public class Interface extends PApplet {
 	public void draw() {}
 	
 	public void plot() {
-		if (iImg < 0) {
-			// TODO
-			background(0xFFFFFFFF);
-			fill(color(0xFF0000FF)); stroke(color(0xFF0000FF));
-			plot(new Drt3(new Pt3(0,0,0), new Pt3(1,0,0)));
-			plot(new Pt3( 1, 0, 0));
-			fill(color(0xFFFF0000)); stroke(color(0xFFFF0000));
-			plot(new Drt3(new Pt3(0,0,0), new Pt3(0,1,0)));
-			plot(new Pt3( 0, 1, 0));
-			fill(color(0xFF00FF00)); stroke(color(0xFF00FF00));
-			plot(new Drt3(new Pt3(0,0,0), new Pt3(0,0,1)));
-			plot(new Pt3( 0, 0, 1));
-			
-			fill(color(0xFFFF0000)); stroke(color(0xFFFF0000));
-			for (Pt_corresp p : pts) plot(p.pt3());
-			if (ptSel != null) { fill(color(0xFF00FF00)); stroke(color(0xFF00FF00)); plot(ptSel.pt3()); }
-			
-//			for (Image img : imgs) if (img != null  && img.pos != null) plot(img.pos);
-//			if (ptSel != null) {
-//				if (ptSel.pt.known)
-//					for (Pt_in_img pii : ptSel.pt2_list) 
-//						if (pii.img.pos != null)
-//							plot(new Drt3(pii.pt, pii.img.pos, pii.img.A)); 
-//				else
-//					try { for (Drt3 d : ptSel.pt.drt) plot(d); } catch(Error r) {}
-//			}
-			
+		if (step < 2) {
+			if (iImg < 0) {
+				plot3d_skel();
+			} else {
+				background(0xFF000000);
+				plot(imgs[iImg]);
+			}
 		} else {
-			background(0xFF000000);
-			plot(imgs[iImg]);
+			if (textured) plot3d_textured();
+			else          plot3d_skel();
 		}
 	}
-
-	
 	
 	
 	
@@ -115,28 +97,30 @@ public class Interface extends PApplet {
 
 	public void keyPressed() {
 		switch (key) {
-			case 'z'  : if (iImg < 0) view.moveForward( dt); break;
-			case 's'  : if (iImg < 0) view.moveForward(-dt); break;
-			case 'd'  : if (iImg < 0) view.moveRight( dt);   break;
-			case 'q'  : if (iImg < 0) view.moveRight(-dt);   break;
+			case 'z'  : if (iImg < 0 || step == 2) view.moveForward( dt); break;
+			case 's'  : if (iImg < 0 || step == 2) view.moveForward(-dt); break;
+			case 'd'  : if (iImg < 0 || step == 2) view.moveRight( dt);   break;
+			case 'q'  : if (iImg < 0 || step == 2) view.moveRight(-dt);   break;
 			case 'l'  : if (step == 0) openF(); break;
 			case ' '  : if (step == 0) openF(); break;
-			case 'a'  : iImg = (iImg == -1)      ? (nImgs-1) : (iImg-1); break;
-			case 'e'  : iImg = (iImg == nImgs-1) ? (-1)      : (iImg+1); break;
+			case 'a'  : if (polygone == null) iImg = (iImg == -1)      ? (nImgs-1) : (iImg-1); break;
+			case 'e'  : if (polygone == null) iImg = (iImg == nImgs-1) ? (-1)      : (iImg+1); break;
 			case 'x'  : delete_from_img(); break;
 			case '\n' : nextStep(); break;
+			case 'v'  : textured = !textured; break;
 		}
 		plot();
 	}
 
 	public void mouseDragged() {
-		if (iImg < 0) view.rotate( (double) (mouseY - mouse_y_)*da/30 ,  (double) (mouseX - mouse_x_)*da/30 );
+		if (iImg < 0 || step == 2) view.rotate( (double) (mouseY - mouse_y_)*da/30 ,  (double) (mouseX - mouse_x_)*da/30 );
 		mouseMoved();
 		plot();
 	}
 	
 	public void mouseMoved() {
 		mouse_x_ = mouseX; mouse_y_ = mouseY;
+		if (step == 1) plot();
 	}
 	
 	public void mouseClicked() {
@@ -165,11 +149,12 @@ public class Interface extends PApplet {
 				}
 				break;
 			case 1:
-				if (mouseButton != LEFT) return;
+				if (iImg < 0 || mouseButton != LEFT) return;
 				select_point();
 				if (ptSel == pol_start) {
 					plans.push(new Plan(poly3, imgs[iImg], polygone));
-					polygone = null; poly3 = null; pol_start = null;
+					n_plans++;
+					polygone = null; poly3 = null; pol_start = null; ptSel = null;
 				} else {
 					if (polygone == null) { 
 						polygone = new Stack<Pt2>();
@@ -274,11 +259,11 @@ public class Interface extends PApplet {
 	
 	public void plot(Position pos, int c) {
 		Pt3 p0 = pos.t.apply(pos.R.inverse()).times(-1);
-		Pt3 p1 = new Pt3( 2, 2,7).apply(pos.R.inverse()).minus(pos.t.apply(pos.R.inverse()));
-		Pt3 p2 = new Pt3( 2,-2,7).apply(pos.R.inverse()).minus(pos.t.apply(pos.R.inverse()));
-		Pt3 p3 = new Pt3(-2, 2,7).apply(pos.R.inverse()).minus(pos.t.apply(pos.R.inverse()));
-		Pt3 p4 = new Pt3(-2,-2,7).apply(pos.R.inverse()).minus(pos.t.apply(pos.R.inverse()));
-		Pt3 p5 = new Pt3( 0, 0,70).apply(pos.R.inverse()).minus(pos.t.apply(pos.R.inverse()));		
+		Pt3 p1 = new Pt3( 2, 2,7).apply(pos.R.inverse()).plus(p0);
+		Pt3 p2 = new Pt3( 2,-2,7).apply(pos.R.inverse()).plus(p0);
+		Pt3 p3 = new Pt3(-2, 2,7).apply(pos.R.inverse()).plus(p0);
+		Pt3 p4 = new Pt3(-2,-2,7).apply(pos.R.inverse()).plus(p0);
+		Pt3 p5 = new Pt3( 0, 0,70).apply(pos.R.inverse()).plus(p0);		
 		fill(color(c)); stroke(color(c));
 		plot(p0);
 		plot(p0,p1); plot(p0,p2); plot(p0,p3); plot(p0,p4); plot(p0,p5);
@@ -294,8 +279,109 @@ public class Interface extends PApplet {
 		if (ptSel != null) plot(ptSel.pt2_in_img(img));
 		if (img.pos == null) 
 			{ fill(0x88FF0000); stroke(0x88FF0000); textSize(32); text("Unknow pose", 20, 50); }
+		if (step == 0) return;
+		fill(0xFFFF0000); stroke(0xFFFF0000);		
+		for (Plan pl : plans) {
+			if (pl.img != img) continue;
+			Pt2 a = null, b = null;
+			for (Pt2 p : pl.corners2d) {
+				if (a == null) a = p;
+				plot(p,b);
+				b = p;
+			}
+			plot(a,b);
+		}
+		if (polygone == null) return;
+		fill(0xFF00FF00); stroke(0xFF00FF00);
+		Pt2 a = null;
+		for (Pt2 p : polygone) {
+			plot(a,p);
+			a = p;
+		}
+		plot(a, new Pt2(mouseX,mouseY));
 	}
 	
+	public void plot3d_skel() {
+		
+		background(0xFFFFFFFF);
+		fill(color(0xFF0000FF)); stroke(color(0xFF0000FF));
+		plot(new Drt3(new Pt3(0,0,0), new Pt3(1,0,0)));
+		plot(new Pt3( 1, 0, 0));
+		fill(color(0xFFFF0000)); stroke(color(0xFFFF0000));
+		plot(new Drt3(new Pt3(0,0,0), new Pt3(0,1,0)));
+		plot(new Pt3( 0, 1, 0));
+		fill(color(0xFF00FF00)); stroke(color(0xFF00FF00));
+		plot(new Drt3(new Pt3(0,0,0), new Pt3(0,0,1)));
+		plot(new Pt3( 0, 0, 1));
+		
+		fill(color(0xFFFF0000)); stroke(color(0xFFFF0000));
+		for (Pt_corresp p : pts) plot(p.pt3());
+		if (ptSel != null) { fill(color(0xFF00FF00)); stroke(color(0xFF00FF00)); plot(ptSel.pt3()); }
+		
+//		for (Image img : imgs) if (img != null  && img.pos != null) plot(img.pos);
+//		if (ptSel != null) {
+//			if (ptSel.pt.known)
+//				for (Pt_in_img pii : ptSel.pt2_list) 
+//					if (pii.img.pos != null)
+//						plot(new Drt3(pii.pt, pii.img.pos, pii.img.A)); 
+//			else
+//				try { for (Drt3 d : ptSel.pt.drt) plot(d); } catch(Error r) {}
+//		}
+		
+		if (step == 0) return;
+		fill(0xFFFF0000); stroke(0xFFFF0000);		
+		for (Plan pl : plans) {
+			Pt3 a = null, b = null;
+			for (Pt3 p : pl.corners3d) {
+				if (a == null) a = p;
+				plot(p,b);
+				b = p;
+			}
+			plot(a,b);
+		}
+		
+	}
+	
+	public void plot3d_textured() {
+		background(0xFFFFFFFF);
+		for (int x = 0; x < this.width; x += LD_size) {
+			for (int y = 0; y < this.height; y += LD_size) {
+				int c = texture_color(new Pt2(x,y));
+				if (c != 0) {
+					for (int x_ = x; x_ < x+LD_size; x_++)
+						for (int y_ = y; y_ < y+LD_size; y_++)
+							set(x_,y_,c);
+				}
+			}
+		}
+	}
+	
+	public int texture_color(Pt2 p) {
+		Plan[]   pls   = new Plan[n_plans];
+		double[] dists = new double[n_plans];
+		int i = 0;
+		for (Plan pl : plans) {
+			pls[i]   = pl;
+			dists[i] = pl.dist_from_view(view, p, A);
+			i++;
+		}
+		for (i = 0; i < n_plans-1; i++) {
+			int    k = i;
+			for (int j = i+1; j < n_plans; j++)
+				if (dists[j] < dists[k]) k = j;
+			double d  = dists[i]; dists[i] = dists[k]; dists[k] = d;
+			Plan   pl = pls[i];   pls[i]   = pls[k];   pls[k]   = pl;
+		}
+		Matrix Rinv = view.R.inverse();
+		Pt3 a = p.toPt3().apply(Ainv).apply(Rinv);
+		Pt3 b = view.t.apply(Rinv);
+		for (i = 0; i < n_plans; i++) {
+			if (dists[i] < 0) return 0;
+			int c = pls[i].color(a.times(dists[i]).minus(b));
+			if (c != 0) return c;
+		}
+		return 0;
+	}
 	
 	
 	
@@ -364,13 +450,14 @@ public class Interface extends PApplet {
 			case 1:
 				if (polygone == null) return;
 				polygone.pop(); poly3.pop();
-				if (polygone.isEmpty()) { polygone = null; poly3 = null; pol_start = null; }
+				if (polygone.isEmpty()) { polygone = null; poly3 = null; pol_start = null; ptSel = null; }
 				break;
 		}
 	}
 	
 	private void nextStep() {
-		step++;
+		if (step  < 2) { step++; ptSel = null; }
+		if (step == 2) iImg = -1;
 	}
 	
 	

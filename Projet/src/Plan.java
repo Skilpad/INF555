@@ -78,7 +78,14 @@ public class Plan {
 		Matrix Rinv = pos.R.inverse();
 		double d = n.scal(p.toPt3().apply(A.inverse()).apply(Rinv));
 		if (d == 0) return -1;
-		return n.scal(pos.t.apply(Rinv).plus(M));
+		return n.scal(pos.t.apply(Rinv).plus(M))/d;
+	}
+	
+	public int color(Pt3 p) {
+		Pt2 p_ = p.apply(img.pos.R).plus(img.pos.t).apply(img.A).toPt2Im();
+		if (p_ == null) return 0;	
+		if (inside(p_)) return img.img.get((int) p_.x, (int) p_.y);
+		return 0;
 	}
 	
 	
