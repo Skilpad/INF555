@@ -11,6 +11,9 @@ public class Position {
 	public Pt3 t;
 	public double aX, aY;
 	
+	public Matrix Rinv;
+	public Pt3    k;
+	
 	private static double threshold2  = 0.0000001;
 	private static double threshold2d = 0.000000000000001;
 	
@@ -26,10 +29,11 @@ public class Position {
 		this.R.set(2,0, R.get(2,0)); this.R.set(2,1, R.get(2,1)); this.R.set(2,2, R.get(2,2));
 		this.t.x = t.x; this.t.y = t.y; this.t.z = t.z;
 		this.aX = 0; this.aY = 0;
+		this.Rinv = R.inverse();
+		this.k = (new Pt3(0,0,1)).apply(this.Rinv);
 	}
 	
 	public Position(Stack<Pt2> pts2D, Stack<Pt3> pts3D, Matrix A, Matrix dist_coeffs) {    // Built solving PnP. DistCoeff = {{k1,k2,k3,p1,p2}} || {{k1,k2,p1,p2}} || {{k1,k2,k3,p1,p2}}^T || {{k1,k2,p1,p2}}^T || null.
-
 		double fx = A.get(0, 0), fy = A.get(1,1), cx = A.get(0,2), cy = A.get(1,2);
 		double k1, k2, k3, p1, p2;
 		if (dist_coeffs == null) { k1 = k2 = k3 = p1 = p2 = 0; }
@@ -213,7 +217,9 @@ public class Position {
 			
 		}
 		
-		
+		this.Rinv = R.inverse();
+		this.k = (new Pt3(0,0,1)).apply(this.Rinv);
+
 
 	}
 	
@@ -245,6 +251,8 @@ public class Position {
 		t = t.apply(R.inverse());
 		R = rY.times(rX).inverse();
 		t = t.apply(R);
+		this.Rinv = R.inverse();
+		this.k = (new Pt3(0,0,1)).apply(this.Rinv);
 	}
 
 		

@@ -25,7 +25,6 @@ public class Interface extends PApplet {
 	float newXmag, newYmag = 0;
 	
 	boolean kmeans = false;
-	
 	int view = 0;
 	
 	

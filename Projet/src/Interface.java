@@ -108,6 +108,17 @@ public class Interface extends PApplet {
 			case 'x'  : delete_from_img(); break;
 			case '\n' : nextStep(); break;
 			case 'v'  : textured = !textured; break;
+			case '+'  : if (LD_size > 1) LD_size--; break;
+			case '-'  : LD_size++; break;
+			case '9'  : LD_size = 9; break;
+			case '8'  : LD_size = 8; break;
+			case '7'  : LD_size = 7; break;
+			case '6'  : LD_size = 6; break;
+			case '5'  : LD_size = 5; break;
+			case '4'  : LD_size = 4; break;
+			case '3'  : LD_size = 3; break;
+			case '2'  : LD_size = 2; break;
+			case '1'  : LD_size = 1; break;			
 		}
 		plot();
 	}
@@ -258,12 +269,12 @@ public class Interface extends PApplet {
 	}
 	
 	public void plot(Position pos, int c) {
-		Pt3 p0 = pos.t.apply(pos.R.inverse()).times(-1);
-		Pt3 p1 = new Pt3( 2, 2,7).apply(pos.R.inverse()).plus(p0);
-		Pt3 p2 = new Pt3( 2,-2,7).apply(pos.R.inverse()).plus(p0);
-		Pt3 p3 = new Pt3(-2, 2,7).apply(pos.R.inverse()).plus(p0);
-		Pt3 p4 = new Pt3(-2,-2,7).apply(pos.R.inverse()).plus(p0);
-		Pt3 p5 = new Pt3( 0, 0,70).apply(pos.R.inverse()).plus(p0);		
+		Pt3 p0 = pos.t.apply(pos.Rinv).times(-1);
+		Pt3 p1 = new Pt3( 2, 2,7).apply(pos.Rinv).plus(p0);
+		Pt3 p2 = new Pt3( 2,-2,7).apply(pos.Rinv).plus(p0);
+		Pt3 p3 = new Pt3(-2, 2,7).apply(pos.Rinv).plus(p0);
+		Pt3 p4 = new Pt3(-2,-2,7).apply(pos.Rinv).plus(p0);
+		Pt3 p5 = new Pt3( 0, 0,70).apply(pos.Rinv).plus(p0);		
 		fill(color(c)); stroke(color(c));
 		plot(p0);
 		plot(p0,p1); plot(p0,p2); plot(p0,p3); plot(p0,p4); plot(p0,p5);
@@ -329,8 +340,9 @@ public class Interface extends PApplet {
 //		}
 		
 		if (step == 0) return;
-		fill(0xFFFF0000); stroke(0xFFFF0000);		
+//		fill(0xFFFF0000); stroke(0xFFFF0000);		
 		for (Plan pl : plans) {
+			fill(0xFFFF0000); stroke(0xFFFF0000);		
 			Pt3 a = null, b = null;
 			for (Pt3 p : pl.corners3d) {
 				if (a == null) a = p;
@@ -338,15 +350,23 @@ public class Interface extends PApplet {
 				b = p;
 			}
 			plot(a,b);
+			fill(0xFF0000FF); stroke(0xFF0000FF);
+			plot(pl.M); plot(pl.M,pl.M.plus(pl.n));
 		}
 		
 	}
 	
 	public void plot3d_textured() {
 		background(0xFFFFFFFF);
+		Stack<Plan> plans_ = new Stack<Plan>();
+		int n_plans_ = 0;
+		for (Plan pl : plans) {
+			if (pl.prepare_to_view(view, A, windowDim))
+				{ plans_.push(pl); n_plans_++; }
+		}
 		for (int x = 0; x < this.width; x += LD_size) {
 			for (int y = 0; y < this.height; y += LD_size) {
-				int c = texture_color(new Pt2(x,y));
+				int c = texture_color(new Pt2(x,y), plans_, n_plans_);
 				if (c != 0) {
 					for (int x_ = x; x_ < x+LD_size; x_++)
 						for (int y_ = y; y_ < y+LD_size; y_++)
@@ -354,9 +374,21 @@ public class Interface extends PApplet {
 				}
 			}
 		}
+		for (Plan pl : plans) {
+			fill(0xFFFF0000); stroke(0xFFFF0000);		
+			Pt3 a = null, b = null;
+			for (Pt3 p : pl.corners3d) {
+				if (a == null) a = p;
+				plot(p,b);
+				b = p;
+			}
+			plot(a,b);
+			fill(0xFF0000FF); stroke(0xFF0000FF);
+			plot(pl.M); plot(pl.M,pl.M.plus(pl.n.times(50)));
+		} 
 	}
 	
-	public int texture_color(Pt2 p) {
+	public int texture_color(Pt2 p, Stack<Plan> plans, int n_plans) {
 		Plan[]   pls   = new Plan[n_plans];
 		double[] dists = new double[n_plans];
 		int i = 0;
@@ -372,9 +404,8 @@ public class Interface extends PApplet {
 			double d  = dists[i]; dists[i] = dists[k]; dists[k] = d;
 			Plan   pl = pls[i];   pls[i]   = pls[k];   pls[k]   = pl;
 		}
-		Matrix Rinv = view.R.inverse();
-		Pt3 a = p.toPt3().apply(Ainv).apply(Rinv);
-		Pt3 b = view.t.apply(Rinv);
+		Pt3 a = p.toPt3().apply(Ainv).apply(view.Rinv);
+		Pt3 b = view.t.apply(view.Rinv);
 		for (i = 0; i < n_plans; i++) {
 			if (dists[i] < 0) return 0;
 			int c = pls[i].color(a.times(dists[i]).minus(b));

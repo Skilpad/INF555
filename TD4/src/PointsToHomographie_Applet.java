@@ -37,6 +37,7 @@ public class PointsToHomographie_Applet extends PApplet {
 	PImage from_distorted;
 	PImage to_distorted;
 	
+	
 	boolean wide_screen;
 	
 	Stack<Pt> from;

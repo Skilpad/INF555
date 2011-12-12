@@ -202,6 +202,7 @@ public class GrayImage {
 		/* Gradient */
 //		new ImageViewer(new GrayImage(img.verticalGradient()));	
 //		new ImageViewer(new GrayImage(img.horizontalGradient()));	
+
 		(new GrayImage(img.gradient())).show();	
 		
 		/* Convolution */
@@ -210,7 +211,8 @@ public class GrayImage {
 		System.out.println("Mask: ");
 		convol.print(3,2);
 		new ImageViewer(new GrayImage(img.convolution(convol)));	
-//		double[][] dconvol2 = {{0,1},{-1,0}};
+
+		//		double[][] dconvol2 = {{0,1},{-1,0}};
 //		convol = new Matrix(dconvol2);
 //		System.out.println("Mask: ");
 //		convol.print(3,2);

@@ -11,7 +11,8 @@ public class Interface extends PApplet {
 		Constants.pApplet = this;
 		colorMode(RGB, 1); 
 		size(Constants.destWidth, Constants.destHeight);
-		src = loadImage("grass.png");
+//		src = loadImage("grass.png");
+		src = loadImage("txt.png");		
 		println(src.width + " - " + src.height);
 		dst = new PImage(Constants.destWidth, Constants.destHeight);
 		pgm = new EfrosLeung(src, dst);
