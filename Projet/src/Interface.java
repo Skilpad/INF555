@@ -49,6 +49,7 @@ public class Interface extends PApplet {
 	
 	boolean textured = true;
 	int LD_size = 15;
+	boolean skel = true;
 	
 	
 	
@@ -118,7 +119,8 @@ public class Interface extends PApplet {
 			case '4'  : LD_size = 4; break;
 			case '3'  : LD_size = 3; break;
 			case '2'  : LD_size = 2; break;
-			case '1'  : LD_size = 1; break;			
+			case '1'  : LD_size = 1; break;
+			case 'b'  : skel = !skel; break;
 		}
 		plot();
 	}
@@ -374,17 +376,19 @@ public class Interface extends PApplet {
 				}
 			}
 		}
-		for (Plan pl : plans) {
-			fill(0xFFFF0000); stroke(0xFFFF0000);		
-			Pt3 a = null, b = null;
-			for (Pt3 p : pl.corners3d) {
-				if (a == null) a = p;
-				plot(p,b);
-				b = p;
+		if (skel) {
+			for (Plan pl : plans) {
+				fill(0xFFFF0000); stroke(0xFFFF0000);		
+				Pt3 a = null, b = null;
+				for (Pt3 p : pl.corners3d) {
+					if (a == null) a = p;
+					plot(p,b);
+					b = p;
+				}
+				plot(a,b);
+				fill(0xFF0000FF); stroke(0xFF0000FF);
+				plot(pl.M); plot(pl.M,pl.M.plus(pl.n.times(50)));
 			}
-			plot(a,b);
-			fill(0xFF0000FF); stroke(0xFF0000FF);
-			plot(pl.M); plot(pl.M,pl.M.plus(pl.n.times(50)));
 		} 
 	}
 	
@@ -395,19 +399,20 @@ public class Interface extends PApplet {
 		for (Plan pl : plans) {
 			pls[i]   = pl;
 			dists[i] = pl.dist_from_view(view, p, A);
+			if (dists[i] < 0) dists[i] = Double.POSITIVE_INFINITY;
 			i++;
 		}
 		for (i = 0; i < n_plans-1; i++) {
 			int    k = i;
 			for (int j = i+1; j < n_plans; j++)
-				if (dists[j] < dists[k]) k = j;
+				if (dists[j] < dists[k] && dists[j] > 0) k = j;
 			double d  = dists[i]; dists[i] = dists[k]; dists[k] = d;
 			Plan   pl = pls[i];   pls[i]   = pls[k];   pls[k]   = pl;
 		}
 		Pt3 a = p.toPt3().apply(Ainv).apply(view.Rinv);
 		Pt3 b = view.t.apply(view.Rinv);
 		for (i = 0; i < n_plans; i++) {
-			if (dists[i] < 0) return 0;
+			if (dists[i] == Double.POSITIVE_INFINITY) return 0;
 			int c = pls[i].color(a.times(dists[i]).minus(b));
 			if (c != 0) return c;
 		}
